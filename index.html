@@ -23,12 +23,12 @@ body {
     text-align: center;
     width: 320px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    z-index: 10;
 }
 
 .buttons {
     position: relative;
     height: 80px;
-    margin-top: 20px;
 }
 
 button {
@@ -38,7 +38,6 @@ button {
     cursor: pointer;
     font-size: 16px;
     position: absolute;
-    transition: all 0.2s ease;
 }
 
 #yesBtn {
@@ -78,24 +77,11 @@ button {
     to { transform: scale(1); opacity: 1; }
 }
 
-/* 💥 Blast animation */
-@keyframes flyUp {
-    0% { transform: translateY(0); opacity: 1; }
-    100% { transform: translateY(-110vh); opacity: 0; }
-}
-
-/* 💫 Floating chaos hearts */
-@keyframes floatMove {
-    0% { transform: translate(0,0); }
-    25% { transform: translate(40px,-60px); }
-    50% { transform: translate(-30px,40px); }
-    75% { transform: translate(60px,30px); }
-    100% { transform: translate(0,0); }
-}
-
-.heart {
+canvas {
     position: fixed;
-    pointer-events: none;
+    top: 0;
+    left: 0;
+    z-index: 1;
 }
 </style>
 </head>
@@ -103,7 +89,7 @@ button {
 <body>
 
 <div class="container">
-    <h1>Hey Sonali ❤️</h1>
+    <h1>Hey Sonali.....❤️</h1>
     <p>Will you be mine? 💖</p>
 
     <div class="buttons">
@@ -119,87 +105,120 @@ button {
     </div>
 </div>
 
+<canvas id="canvas"></canvas>
+
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-    const noBtn = document.getElementById("noBtn");
-    const yesBtn = document.getElementById("yesBtn");
-    const overlay = document.getElementById("overlay");
+let hearts = [];
 
-    // ✅ NO BUTTON (stays inside box)
-    noBtn.addEventListener("mouseenter", () => {
-        const container = document.querySelector(".buttons");
+class Heart {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = 18 + Math.random() * 10;
+        this.dx = (Math.random() - 0.5) * 4;
+        this.dy = (Math.random() - 0.5) * 4;
+    }
 
-        const maxX = container.clientWidth - noBtn.offsetWidth;
-        const maxY = container.clientHeight - noBtn.offsetHeight;
+    draw() {
+        ctx.font = this.size + "px Arial";
+        ctx.fillText("❤️", this.x, this.y);
+    }
 
-        const x = Math.random() * maxX;
-        const y = Math.random() * maxY;
+    update() {
+        this.x += this.dx;
+        this.y += this.dy;
 
-        noBtn.style.left = x + "px";
-        noBtn.style.top = y + "px";
-    });
+        // 💥 Wall collision (blast effect)
+        if (this.x <= 0 || this.x >= canvas.width) {
+            this.dx *= -1;
+            createMiniBlast(this.x, this.y);
+        }
 
-    // ✅ YES CLICK
-    yesBtn.addEventListener("click", () => {
+        if (this.y <= 0 || this.y >= canvas.height) {
+            this.dy *= -1;
+            createMiniBlast(this.x, this.y);
+        }
+    }
+}
 
-        overlay.style.display = "flex";
+// 💥 mini blast on wall hit
+function createMiniBlast(x, y) {
+    for (let i = 0; i < 5; i++) {
+        hearts.push(new Heart(x, y));
+    }
+}
 
-        createBlast();
+// 💥 collision detection
+function resolveCollision(h1, h2) {
+    const dx = h1.x - h2.x;
+    const dy = h1.y - h2.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
 
-        setTimeout(() => {
-            overlay.style.display = "none";
-            startChaos();
-        }, 3000);
-    });
+    if (dist < 20) {
+        // bounce
+        h1.dx *= -1;
+        h1.dy *= -1;
+        h2.dx *= -1;
+        h2.dy *= -1;
 
-    // 💥 BIG SMOOTH BLAST (NO LAG)
-    function createBlast() {
-        const hearts = ["❤️","💖","💘","💕","💞"];
+        // 💖 duplicate (limit count)
+        if (hearts.length < 120) {
+            hearts.push(new Heart(h1.x, h1.y));
+        }
+    }
+}
 
-        for (let i = 0; i < 150; i++) {
-            let el = document.createElement("div");
-            el.className = "heart";
-            el.innerHTML = hearts[Math.floor(Math.random() * hearts.length)];
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            let x = Math.random() * window.innerWidth;
+    for (let i = 0; i < hearts.length; i++) {
+        hearts[i].update();
+        hearts[i].draw();
 
-            el.style.left = x + "px";
-            el.style.bottom = "-20px";
-            el.style.fontSize = (Math.random() * 25 + 12) + "px";
-
-            let duration = Math.random() * 2 + 2;
-
-            el.style.animation = `flyUp ${duration}s linear forwards`;
-
-            document.body.appendChild(el);
-
-            setTimeout(() => el.remove(), duration * 1000);
+        for (let j = i + 1; j < hearts.length; j++) {
+            resolveCollision(hearts[i], hearts[j]);
         }
     }
 
-    // 💥 CHAOS HEARTS (SMOOTH FLOATING)
-    function startChaos() {
-        const hearts = ["❤️","💖","💘","💕","💞"];
+    requestAnimationFrame(animate);
+}
 
-        for (let i = 0; i < 40; i++) {
-            let el = document.createElement("div");
-            el.className = "heart";
-            el.innerHTML = hearts[Math.floor(Math.random() * hearts.length)];
+animate();
 
-            el.style.left = Math.random() * window.innerWidth + "px";
-            el.style.top = Math.random() * window.innerHeight + "px";
-            el.style.fontSize = "20px";
+// ✅ NO button moves FULL SCREEN (but inside viewport)
+document.getElementById("noBtn").onmouseover = function () {
+    this.style.position = "fixed";
 
-            let duration = Math.random() * 6 + 4;
+    const maxX = window.innerWidth - this.offsetWidth;
+    const maxY = window.innerHeight - this.offsetHeight;
 
-            el.style.animation = `floatMove ${duration}s infinite ease-in-out`;
+    this.style.left = Math.random() * maxX + "px";
+    this.style.top = Math.random() * maxY + "px";
+};
 
-            document.body.appendChild(el);
-        }
+// ✅ YES CLICK
+document.getElementById("yesBtn").onclick = () => {
+
+    document.getElementById("overlay").style.display = "flex";
+
+    // 💥 initial blast
+    for (let i = 0; i < 40; i++) {
+        hearts.push(new Heart(
+            Math.random() * canvas.width,
+            Math.random() * canvas.height
+        ));
     }
 
-});
+    setTimeout(() => {
+        document.getElementById("overlay").style.display = "none";
+    }, 3000);
+};
+
 </script>
 
 </body>
