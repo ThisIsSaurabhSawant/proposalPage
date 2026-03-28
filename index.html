@@ -89,7 +89,7 @@ canvas {
 <body>
 
 <div class="container">
-    <h1>Hey Sonali.❤️</h1>
+    <h1>Hey Sonali...❤️</h1>
     <p>Will you be mine? 💖</p>
 
     <div class="buttons">
@@ -133,21 +133,30 @@ class Heart {
     }
 
     update() {
-        // 🧲 Attraction to cursor
-        let dx = mouse.x - this.x;
-        let dy = mouse.y - this.y;
+    // 🧲 stronger attraction
+    let dx = mouse.x - this.x;
+    let dy = mouse.y - this.y;
 
-        this.x += dx * 0.002 + this.dx;
-        this.y += dy * 0.002 + this.dy;
+    const attraction = 0.01;   // 🔥 increase this for faster pull
+    const friction = 0.98;     // smooth movement
 
-        // bounce screen edges
-        if (this.x <= 0 || this.x >= canvas.width) this.dx *= -1;
-        if (this.y <= 0 || this.y >= canvas.height) this.dy *= -1;
-    }
+    this.dx += dx * attraction;
+    this.dy += dy * attraction;
+
+    this.dx *= friction;
+    this.dy *= friction;
+
+    this.x += this.dx;
+    this.y += this.dy;
+
+    // bounce edges
+    if (this.x <= 0 || this.x >= canvas.width) this.dx *= -1;
+    if (this.y <= 0 || this.y >= canvas.height) this.dy *= -1;
+}
 }
 
 // 💖 CREATE MANY HEARTS
-for (let i = 0; i < 120; i++) {
+for (let i = 0; i < 320; i++) {
     hearts.push(new Heart());
 }
 
