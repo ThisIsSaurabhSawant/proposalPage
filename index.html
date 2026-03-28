@@ -161,10 +161,25 @@ document.addEventListener("DOMContentLoaded", function () {
     yesBtn.addEventListener("click", () => {
         message.style.display = "block";
 
-        for (let i = 0; i < 50; i++) {
-            let heart = document.createElement("div");
-            heart.className = "heart";
-            heart.innerHTML = "❤️";
+        const emojis = ["❤️", "🦋", "🌸"];
+
+for (let i = 0; i < 80; i++) {
+    let el = document.createElement("div");
+    el.className = "floating";
+
+    // random emoji
+    el.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+
+    el.style.left = Math.random() * 100 + "vw";
+    el.style.fontSize = (Math.random() * 20 + 15) + "px";
+    el.style.animationDuration = (Math.random() * 3 + 3) + "s";
+
+    heartsContainer.appendChild(el);
+
+    setTimeout(() => {
+        el.remove();
+    }, 5000);
+}
 
             heart.style.left = Math.random() * 100 + "vw";
             heart.style.animationDuration = (Math.random() * 2 + 2) + "s";
