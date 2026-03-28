@@ -23,12 +23,11 @@ body {
     text-align: center;
     width: 320px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    position: relative;
 }
 
 .buttons {
     position: relative;
-    height: 70px;
+    height: 80px;
     margin-top: 20px;
 }
 
@@ -39,18 +38,21 @@ button {
     cursor: pointer;
     font-size: 16px;
     position: absolute;
+    transition: all 0.2s ease;
 }
 
 #yesBtn {
     background: #28a745;
     color: white;
     left: 20px;
+    top: 20px;
 }
 
 #noBtn {
     background: #dc3545;
     color: white;
-    right: 20px;
+    left: 180px;
+    top: 20px;
 }
 
 #overlay {
@@ -86,7 +88,7 @@ button {
 <body>
 
 <div class="container">
-    <h1>Hey Sonali.❤️</h1>
+    <h1>Hey Sonali...❤️</h1>
     <p>Will you be mine? 💖</p>
 
     <div class="buttons">
@@ -97,7 +99,7 @@ button {
 
 <div id="overlay">
     <div class="popup">
-        <h2>💖 Yayyyy! 💖</h2>
+        <h2>💖 Wow! 💖</h2>
         <p>You made my world ❤️</p>
     </div>
 </div>
@@ -109,34 +111,38 @@ document.addEventListener("DOMContentLoaded", () => {
     const yesBtn = document.getElementById("yesBtn");
     const overlay = document.getElementById("overlay");
 
-    // ✅ NO button moves instantly on hover
+    // ✅ FIXED NO BUTTON MOVEMENT
     noBtn.addEventListener("mouseenter", () => {
         const container = document.querySelector(".buttons");
-        const rect = container.getBoundingClientRect();
 
-        const maxX = rect.width - noBtn.offsetWidth;
-        const maxY = rect.height - noBtn.offsetHeight;
+        const maxX = container.clientWidth - noBtn.offsetWidth;
+        const maxY = container.clientHeight - noBtn.offsetHeight;
 
-        let x = Math.random() * maxX;
-        let y = Math.random() * maxY;
-
-        // avoid yes button zone
-        if (x < 120) x += 80;
+        const x = Math.random() * maxX;
+        const y = Math.random() * maxY;
 
         noBtn.style.left = x + "px";
         noBtn.style.top = y + "px";
     });
 
-    // ✅ YES click
+    // ✅ YES CLICK
     yesBtn.addEventListener("click", () => {
 
-        // show popup instantly
         overlay.style.display = "flex";
 
-        // 💥 BIG BLAST
-        const hearts = ["❤️","💖","💘","💕","💞","❤️","💖","💘","💕","💞","❤️","💖","💘","💕","💞","❤️","💖","💘","💕","💞","❤️","💖","💘","💕","💞"];
+        createBlast();
 
-        for (let i = 0; i < 1200; i++) {
+        setTimeout(() => {
+            overlay.style.display = "none";
+            startChaos();
+        }, 3000);
+    });
+
+    // 💥 OPTIMIZED BLAST (FAST + SMOOTH)
+    function createBlast() {
+        const hearts = ["❤️","💖","💘","💕","💞"];
+
+        for (let i = 0; i < 300; i++) {
             let el = document.createElement("div");
             el.className = "heart";
             el.innerHTML = hearts[Math.floor(Math.random() * hearts.length)];
@@ -146,11 +152,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             el.style.left = x + "px";
             el.style.top = y + "px";
-            el.style.fontSize = (Math.random() * 25 + 10) + "px";
+            el.style.fontSize = (Math.random() * 20 + 10) + "px";
 
             document.body.appendChild(el);
 
-            let speed = Math.random() * 8 + 4;
+            let speed = Math.random() * 5 + 3;
 
             function fly() {
                 y -= speed;
@@ -165,19 +171,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
             fly();
         }
+    }
 
-        // ⏳ 3 sec popup
-        setTimeout(() => {
-            overlay.style.display = "none";
-            startChaos();
-        }, 3000);
-    });
-
-    // 💥 CHAOS HEARTS
+    // 💥 CHAOS HEARTS (SMOOTH VERSION)
     function startChaos() {
-        const hearts = ["❤️","💖","💘","💕","💞","❤️","💖","💘","💕","💞","❤️","💖","💘","💕","💞","❤️","💖","💘","💕","💞","❤️","💖","💘","💕","💞"];
+        const hearts = ["❤️","💖","💘","💕","💞"];
 
-        for (let i = 0; i < 120; i++) {
+        for (let i = 0; i < 60; i++) {
             let el = document.createElement("div");
             el.className = "heart";
             el.innerHTML = hearts[Math.floor(Math.random() * hearts.length)];
@@ -191,14 +191,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
             document.body.appendChild(el);
 
-            let dx = (Math.random() - 0.5) * 15;
-            let dy = (Math.random() - 0.5) * 15;
+            let dx = (Math.random() - 0.5) * 6;
+            let dy = (Math.random() - 0.5) * 6;
 
             function move() {
                 x += dx;
                 y += dy;
 
-                // bounce edges
                 if (x <= 0 || x >= window.innerWidth - 20) dx *= -1;
                 if (y <= 0 || y >= window.innerHeight - 20) dy *= -1;
 
