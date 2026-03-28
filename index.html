@@ -5,91 +5,89 @@
 <title>Just One Question ❤️</title>
 
 <style>
-    body {
-        margin: 0;
-        padding: 0;
-        height: 100vh;
-        background: linear-gradient(to right, #ff9a9e, #fad0c4);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-family: Arial, sans-serif;
-        overflow: hidden;
-    }
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background: linear-gradient(to right, #ff9a9e, #fad0c4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+}
 
-    .container {
-        text-align: center;
-        background: white;
-        padding: 40px;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        position: relative;
-    }
+.container {
+    text-align: center;
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
 
-    h1 {
-        color: #ff4d6d;
-    }
+h1 {
+    color: #ff4d6d;
+}
 
-    p {
-        font-size: 18px;
-        margin-bottom: 30px;
-    }
+p {
+    font-size: 18px;
+    margin-bottom: 30px;
+}
 
-    button {
-        padding: 12px 25px;
-        font-size: 16px;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        margin: 10px;
-        transition: 0.3s;
-    }
+button {
+    padding: 12px 25px;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin: 10px;
+    transition: 0.3s;
+}
 
-    #yesBtn {
-        background-color: #28a745;
-        color: white;
-    }
+#yesBtn {
+    background-color: #28a745;
+    color: white;
+}
 
-    #noBtn {
-        background-color: #dc3545;
-        color: white;
-        position: absolute;
-    }
+#noBtn {
+    background-color: #dc3545;
+    color: white;
+    position: fixed; /* FIXED */
+}
 
-    #message {
-        display: none;
-        font-size: 20px;
-        color: #ff4d6d;
-        margin-top: 20px;
-    }
+#message {
+    display: none;
+    font-size: 20px;
+    color: #ff4d6d;
+    margin-top: 20px;
+}
 
-    .hearts {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        overflow: hidden;
-    }
+.hearts {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+}
 
-    .heart {
-        position: absolute;
-        color: red;
-        font-size: 20px;
-        animation: float 4s linear infinite;
-    }
+.floating {
+    position: absolute;
+    animation: floatUp linear infinite;
+    opacity: 0.9;
+}
 
-    @keyframes float {
-        0% {
-            transform: translateY(100vh);
-            opacity: 1;
-        }
-        100% {
-            transform: translateY(-10vh);
-            opacity: 0;
-        }
+@keyframes floatUp {
+    0% {
+        transform: translateY(100vh) scale(0.8);
+        opacity: 1;
     }
+    100% {
+        transform: translateY(-10vh) scale(1.2);
+        opacity: 0;
+    }
+}
 </style>
 </head>
 
@@ -122,21 +120,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let noClickCount = 0;
 
-    // When NO is clicked
+    // NO button click
     noBtn.addEventListener("click", () => {
         noClickCount++;
 
+        // Grow button (first 5 clicks)
         if (noClickCount <= 5) {
-            let scale = 1 + (noClickCount * 0.5);
+            let scale = 1 + (noClickCount * 0.4);
             noBtn.style.transform = `scale(${scale})`;
         }
 
+        // After 5 clicks → escape
         if (noClickCount >= 5) {
             moveButtonRandomly();
         }
     });
 
-    // Move on hover after 5 clicks
+    // Escape on hover
     noBtn.addEventListener("mouseover", () => {
         if (noClickCount >= 5) {
             moveButtonRandomly();
@@ -144,51 +144,39 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     function moveButtonRandomly() {
-    const padding = 20; // keeps some space from edges
+        const padding = 20;
 
-    const maxX = window.innerWidth - noBtn.offsetWidth - padding;
-    const maxY = window.innerHeight - noBtn.offsetHeight - padding;
+        const maxX = Math.max(0, window.innerWidth - noBtn.offsetWidth - padding);
+        const maxY = Math.max(0, window.innerHeight - noBtn.offsetHeight - padding);
 
-    const x = Math.random() * maxX;
-    const y = Math.random() * maxY;
+        const x = Math.random() * maxX;
+        const y = Math.random() * maxY;
 
-    noBtn.style.position = "fixed"; // IMPORTANT (better than absolute)
-    noBtn.style.left = x + "px";
-    noBtn.style.top = y + "px";
-}
+        noBtn.style.left = `${x}px`;
+        noBtn.style.top = `${y}px`;
+    }
 
-    // YES button
+    // YES button click
     yesBtn.addEventListener("click", () => {
         message.style.display = "block";
 
         const emojis = ["❤️", "🦋", "🌸"];
 
-for (let i = 0; i < 80; i++) {
-    let el = document.createElement("div");
-    el.className = "floating";
+        for (let i = 0; i < 80; i++) {
+            let el = document.createElement("div");
+            el.className = "floating";
 
-    // random emoji
-    el.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+            el.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
 
-    el.style.left = Math.random() * 100 + "vw";
-    el.style.fontSize = (Math.random() * 20 + 15) + "px";
-    el.style.animationDuration = (Math.random() * 3 + 3) + "s";
+            el.style.left = Math.random() * 100 + "vw";
+            el.style.fontSize = (Math.random() * 20 + 15) + "px";
+            el.style.animationDuration = (Math.random() * 3 + 3) + "s";
 
-    heartsContainer.appendChild(el);
-
-    setTimeout(() => {
-        el.remove();
-    }, 5000);
-}
-
-            heart.style.left = Math.random() * 100 + "vw";
-            heart.style.animationDuration = (Math.random() * 2 + 2) + "s";
-
-            heartsContainer.appendChild(heart);
+            heartsContainer.appendChild(el);
 
             setTimeout(() => {
-                heart.remove();
-            }, 4000);
+                el.remove();
+            }, 5000);
         }
     });
 
