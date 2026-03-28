@@ -12,9 +12,8 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: Arial, sans-serif;
+    font-family: Arial;
     overflow: hidden;
-    transition: transform 0.4s ease;
 }
 
 .container {
@@ -22,18 +21,23 @@ body {
     background: white;
     padding: 40px;
     border-radius: 20px;
+    width: 300px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    position: relative;
 }
 
-h1 { color: #ff4d6d; }
+.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
 
 button {
-    padding: 12px 25px;
-    font-size: 16px;
+    padding: 10px 20px;
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    margin: 10px;
+    font-size: 16px;
     transition: 0.3s;
 }
 
@@ -45,41 +49,16 @@ button {
 #noBtn {
     background: #dc3545;
     color: white;
-    position: fixed;
+    position: absolute;
 }
 
 #message {
     display: none;
     margin-top: 20px;
     color: #ff4d6d;
-    font-size: 18px;
 }
 
-/* HEART BLAST */
-.hearts {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-}
-
-.floating {
-    position: absolute;
-    animation: floatUp linear forwards;
-}
-
-@keyframes floatUp {
-    from {
-        transform: translateY(100vh);
-        opacity: 1;
-    }
-    to {
-        transform: translateY(-10vh);
-        opacity: 0;
-    }
-}
-
-/* POPUP */
+/* popup */
 #overlay {
     position: fixed;
     width: 100%;
@@ -88,20 +67,30 @@ button {
     display: none;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
 }
 
 .popup {
     background: white;
-    padding: 35px;
+    padding: 30px;
     border-radius: 20px;
-    text-align: center;
-    animation: zoomIn 0.4s ease;
+    animation: pop 0.4s ease;
 }
 
-@keyframes zoomIn {
-    from { transform: scale(0.6); opacity: 0; }
+@keyframes pop {
+    from { transform: scale(0.5); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
+}
+
+/* blast */
+.blast {
+    position: fixed;
+    pointer-events: none;
+    animation: flyUp linear forwards;
+}
+
+@keyframes flyUp {
+    from { transform: translateY(100vh); opacity: 1; }
+    to { transform: translateY(-10vh); opacity: 0; }
 }
 </style>
 </head>
@@ -109,16 +98,16 @@ button {
 <body>
 
 <div class="container">
-    <h1>Hey ❤️</h1>
+    <h1>Hey Sonali...❤️</h1>
     <p>Will you be mine? 💖</p>
 
-    <button id="yesBtn">Yes 😍</button>
-    <button id="noBtn">No 😅</button>
+    <div class="buttons">
+        <button id="yesBtn">Yes 😍</button>
+        <button id="noBtn">No 😅</button>
+    </div>
 
-    <div id="message">You made me the happiest ❤️</div>
+    <div id="message">You made me happiest ❤️</div>
 </div>
-
-<div class="hearts" id="hearts"></div>
 
 <div id="overlay">
     <div class="popup">
@@ -132,100 +121,99 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const noBtn = document.getElementById("noBtn");
     const yesBtn = document.getElementById("yesBtn");
+    const container = document.querySelector(".container");
     const overlay = document.getElementById("overlay");
-    const heartsContainer = document.getElementById("hearts");
-    const message = document.getElementById("message");
 
-    let noClicks = 0;
+    let clicks = 0;
 
-    // NO BUTTON LOGIC
+    // keep NO button inside box
+    function moveInsideBox() {
+        const rect = container.getBoundingClientRect();
+
+        const maxX = rect.width - noBtn.offsetWidth;
+        const maxY = rect.height - noBtn.offsetHeight;
+
+        const x = Math.random() * maxX;
+        const y = Math.random() * maxY;
+
+        noBtn.style.left = x + "px";
+        noBtn.style.top = y + "px";
+    }
+
     noBtn.addEventListener("click", () => {
-        noClicks++;
-
-        if (noClicks <= 4) {
-            noBtn.style.transform = `scale(${1 + noClicks * 0.3})`;
-        } else {
-            moveButton();
-        }
+        clicks++;
+        if (clicks > 2) moveInsideBox();
     });
 
     noBtn.addEventListener("mouseover", () => {
-        if (noClicks >= 4) moveButton();
+        if (clicks > 1) moveInsideBox();
     });
 
-    function moveButton() {
-        const maxX = window.innerWidth - noBtn.offsetWidth - 20;
-        const maxY = window.innerHeight - noBtn.offsetHeight - 20;
-
-        noBtn.style.left = Math.random() * maxX + "px";
-        noBtn.style.top = Math.random() * maxY + "px";
-    }
-
-    // YES BUTTON
+    // YES CLICK
     yesBtn.addEventListener("click", () => {
 
-        message.style.display = "block";
         overlay.style.display = "flex";
-        document.body.style.transform = "scale(1.05)";
 
-        // 💥 HEART BLAST
+        // 💥 MASSIVE BLAST (fills screen)
         const hearts = ["❤️","💖","💘","💕","💞"];
 
-        for (let i = 0; i < 80; i++) {
+        for (let i = 0; i < 400; i++) {
             let el = document.createElement("div");
-            el.className = "floating";
+            el.className = "blast";
             el.innerHTML = hearts[Math.floor(Math.random() * hearts.length)];
 
             el.style.left = Math.random() * 100 + "vw";
-            el.style.fontSize = (Math.random() * 20 + 15) + "px";
+            el.style.fontSize = (Math.random() * 25 + 15) + "px";
             el.style.animationDuration = (Math.random() * 2 + 2) + "s";
 
-            heartsContainer.appendChild(el);
+            document.body.appendChild(el);
 
-            setTimeout(() => el.remove(), 3500);
+            setTimeout(() => el.remove(), 3000);
         }
 
-        // ⏳ CLOSE POPUP AFTER 5 SEC
+        // ⏳ 3 sec popup
         setTimeout(() => {
             overlay.style.display = "none";
-            startBouncingHearts();
-        }, 5000);
+            startChaosHearts();
+        }, 3000);
     });
 
-    // 🎉 BOUNCING HEARTS
-    function startBouncingHearts() {
+    // 💥 CHAOS HEARTS (bouncing everywhere)
+    function startChaosHearts() {
         const hearts = ["❤️","💖","💘","💕","💞"];
 
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 40; i++) {
             let el = document.createElement("div");
             el.innerHTML = hearts[Math.floor(Math.random() * hearts.length)];
 
             el.style.position = "fixed";
             el.style.fontSize = "24px";
-            el.style.left = Math.random() * (window.innerWidth - 30) + "px";
-            el.style.top = Math.random() * (window.innerHeight - 30) + "px";
+
+            let x = Math.random() * window.innerWidth;
+            let y = Math.random() * window.innerHeight;
+
+            el.style.left = x + "px";
+            el.style.top = y + "px";
 
             document.body.appendChild(el);
 
-            let dx = (Math.random() - 0.5) * 6;
-            let dy = (Math.random() - 0.5) * 6;
+            let dx = (Math.random() - 0.5) * 10;
+            let dy = (Math.random() - 0.5) * 10;
 
-            function animate() {
-                let rect = el.getBoundingClientRect();
+            function move() {
+                x += dx;
+                y += dy;
 
-                let x = rect.left + dx;
-                let y = rect.top + dy;
-
-                if (x <= 0 || x >= window.innerWidth - 30) dx *= -1;
-                if (y <= 0 || y >= window.innerHeight - 30) dy *= -1;
+                if (x <= 0 || x >= window.innerWidth - 20) dx *= -1;
+                if (y <= 0 || y >= window.innerHeight - 20) dy *= -1;
 
                 el.style.left = x + "px";
                 el.style.top = y + "px";
 
-                requestAnimationFrame(animate);
+                requestAnimationFrame(move);
             }
 
-            animate();
+            move();
         }
     }
 
