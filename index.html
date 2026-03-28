@@ -24,6 +24,7 @@ body {
     width: 320px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     z-index: 10;
+    position: relative;
 }
 
 .buttons {
@@ -58,7 +59,7 @@ button {
     position: fixed;
     width: 100%;
     height: 100%;
-    background: rgba(255,182,193,0.6);
+    background: rgba(255,182,193,0.7);
     display: none;
     justify-content: center;
     align-items: center;
@@ -69,7 +70,7 @@ button {
     background: white;
     padding: 30px;
     border-radius: 20px;
-    animation: pop 0.3s ease;
+    animation: pop 0.2s ease;
 }
 
 @keyframes pop {
@@ -89,7 +90,7 @@ canvas {
 <body>
 
 <div class="container">
-    <h1>Hey Sonali...❤️</h1>
+    <h1>Hey Sonali.❤️</h1>
     <p>I want to grow old with you, laugh with you, and love you endlessly.</p>
     <p>Will you be mine? 💖</p>
 
@@ -116,14 +117,15 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 let hearts = [];
+let blastHearts = [];
 let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
 
-// 💖 HEART CLASS
+// 💖 NORMAL HEART
 class Heart {
     constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 20 + 10;
+        this.size = Math.random() * 12 + 10;
         this.dx = (Math.random() - 0.5) * 2;
         this.dy = (Math.random() - 0.5) * 2;
     }
@@ -134,40 +136,85 @@ class Heart {
     }
 
     update() {
-    // 🧲 stronger attraction
-    let dx = mouse.x - this.x;
-    let dy = mouse.y - this.y;
+        let dx = mouse.x - this.x;
+        let dy = mouse.y - this.y;
 
-    const attraction = 0.01;   // 🔥 increase this for faster pull
-    const friction = 0.98;     // smooth movement
+        let distance = Math.sqrt(dx * dx + dy * dy);
+        let force = distance < 150 ? 0.04 : 0.01;
 
-    this.dx += dx * attraction;
-    this.dy += dy * attraction;
+        this.dx += dx * force;
+        this.dy += dy * force;
 
-    this.dx *= friction;
-    this.dy *= friction;
+        this.dx *= 0.97;
+        this.dy *= 0.97;
 
-    this.x += this.dx;
-    this.y += this.dy;
+        this.x += this.dx;
+        this.y += this.dy;
 
-    // bounce edges
-    if (this.x <= 0 || this.x >= canvas.width) this.dx *= -1;
-    if (this.y <= 0 || this.y >= canvas.height) this.dy *= -1;
-}
+        if (this.x <= 0 || this.x >= canvas.width) this.dx *= -1;
+        if (this.y <= 0 || this.y >= canvas.height) this.dy *= -1;
+    }
 }
 
-// 💖 CREATE MANY HEARTS
-for (let i = 0; i < 150; i++) {
+// 💥 BLAST HEART
+class BlastHeart {
+    constructor(x, y, dx, dy) {
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * 25 + 15;
+        this.dx = dx;
+        this.dy = dy;
+        this.life = 120;
+    }
+
+    draw() {
+        ctx.font = this.size + "px Arial";
+        ctx.fillText("❤️", this.x, this.y);
+    }
+
+    update() {
+        this.x += this.dx;
+        this.y += this.dy;
+        this.life--;
+    }
+}
+
+// 💖 CREATE NORMAL HEARTS
+for (let i = 0; i < 200; i++) {
     hearts.push(new Heart());
 }
 
-// 🎯 MOUSE TRACK
+// 🎯 MOUSE
 window.addEventListener("mousemove", (e) => {
     mouse.x = e.clientX;
     mouse.y = e.clientY;
 });
 
-// 🎬 ANIMATION LOOP
+// 💥 BLAST FUNCTION
+function createBlast() {
+    for (let i = 0; i < 400; i++) {
+        let side = Math.floor(Math.random() * 4);
+        let x, y;
+
+        if (side === 0) { x = Math.random() * canvas.width; y = 0; }
+        else if (side === 1) { x = canvas.width; y = Math.random() * canvas.height; }
+        else if (side === 2) { x = Math.random() * canvas.width; y = canvas.height; }
+        else { x = 0; y = Math.random() * canvas.height; }
+
+        let centerX = canvas.width / 2;
+        let centerY = canvas.height / 2;
+
+        let angle = Math.atan2(centerY - y, centerX - x);
+        let speed = Math.random() * 6 + 4;
+
+        let dx = Math.cos(angle) * speed;
+        let dy = Math.sin(angle) * speed;
+
+        blastHearts.push(new BlastHeart(x, y, dx, dy));
+    }
+}
+
+// 🎬 ANIMATION
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -176,13 +223,20 @@ function animate() {
         h.draw();
     });
 
+    blastHearts.forEach((h, i) => {
+        h.update();
+        h.draw();
+        if (h.life <= 0) blastHearts.splice(i, 1);
+    });
+
     requestAnimationFrame(animate);
 }
-
 animate();
 
-// 😈 NO BUTTON FULL SCREEN ESCAPE
-document.getElementById("noBtn").onmouseover = function () {
+// 😈 NO BUTTON (FULL SCREEN LIMIT)
+const noBtn = document.getElementById("noBtn");
+
+noBtn.onmouseover = function () {
     this.style.position = "fixed";
 
     const maxX = window.innerWidth - this.offsetWidth;
@@ -192,11 +246,13 @@ document.getElementById("noBtn").onmouseover = function () {
     this.style.top = Math.random() * maxY + "px";
 };
 
-// 💖 YES CLICK
+// 💖 YES BUTTON
 document.getElementById("yesBtn").onclick = () => {
     const overlay = document.getElementById("overlay");
 
     overlay.style.display = "flex";
+
+    createBlast(); // 💥 MASSIVE BLAST
 
     setTimeout(() => {
         overlay.style.display = "none";
