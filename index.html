@@ -89,7 +89,7 @@ canvas {
 <body>
 
 <div class="container">
-    <h1>Hey Sonali.....❤️</h1>
+    <h1>Hey Sonali.❤️</h1>
     <p>Will you be mine? 💖</p>
 
     <div class="buttons">
@@ -110,18 +110,21 @@ canvas {
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 let hearts = [];
+let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
 
+// 💖 HEART CLASS
 class Heart {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-        this.size = 18 + Math.random() * 10;
-        this.dx = (Math.random() - 0.5) * 4;
-        this.dy = (Math.random() - 0.5) * 4;
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 20 + 10;
+        this.dx = (Math.random() - 0.5) * 2;
+        this.dy = (Math.random() - 0.5) * 2;
     }
 
     draw() {
@@ -130,67 +133,45 @@ class Heart {
     }
 
     update() {
-        this.x += this.dx;
-        this.y += this.dy;
+        // 🧲 Attraction to cursor
+        let dx = mouse.x - this.x;
+        let dy = mouse.y - this.y;
 
-        // 💥 Wall collision (blast effect)
-        if (this.x <= 0 || this.x >= canvas.width) {
-            this.dx *= -1;
-            createMiniBlast(this.x, this.y);
-        }
+        this.x += dx * 0.002 + this.dx;
+        this.y += dy * 0.002 + this.dy;
 
-        if (this.y <= 0 || this.y >= canvas.height) {
-            this.dy *= -1;
-            createMiniBlast(this.x, this.y);
-        }
+        // bounce screen edges
+        if (this.x <= 0 || this.x >= canvas.width) this.dx *= -1;
+        if (this.y <= 0 || this.y >= canvas.height) this.dy *= -1;
     }
 }
 
-// 💥 mini blast on wall hit
-function createMiniBlast(x, y) {
-    for (let i = 0; i < 5; i++) {
-        hearts.push(new Heart(x, y));
-    }
+// 💖 CREATE MANY HEARTS
+for (let i = 0; i < 120; i++) {
+    hearts.push(new Heart());
 }
 
-// 💥 collision detection
-function resolveCollision(h1, h2) {
-    const dx = h1.x - h2.x;
-    const dy = h1.y - h2.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
+// 🎯 MOUSE TRACK
+window.addEventListener("mousemove", (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+});
 
-    if (dist < 20) {
-        // bounce
-        h1.dx *= -1;
-        h1.dy *= -1;
-        h2.dx *= -1;
-        h2.dy *= -1;
-
-        // 💖 duplicate (limit count)
-        if (hearts.length < 120) {
-            hearts.push(new Heart(h1.x, h1.y));
-        }
-    }
-}
-
+// 🎬 ANIMATION LOOP
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    for (let i = 0; i < hearts.length; i++) {
-        hearts[i].update();
-        hearts[i].draw();
-
-        for (let j = i + 1; j < hearts.length; j++) {
-            resolveCollision(hearts[i], hearts[j]);
-        }
-    }
+    hearts.forEach(h => {
+        h.update();
+        h.draw();
+    });
 
     requestAnimationFrame(animate);
 }
 
 animate();
 
-// ✅ NO button moves FULL SCREEN (but inside viewport)
+// 😈 NO BUTTON FULL SCREEN ESCAPE
 document.getElementById("noBtn").onmouseover = function () {
     this.style.position = "fixed";
 
@@ -201,24 +182,16 @@ document.getElementById("noBtn").onmouseover = function () {
     this.style.top = Math.random() * maxY + "px";
 };
 
-// ✅ YES CLICK
+// 💖 YES CLICK
 document.getElementById("yesBtn").onclick = () => {
+    const overlay = document.getElementById("overlay");
 
-    document.getElementById("overlay").style.display = "flex";
-
-    // 💥 initial blast
-    for (let i = 0; i < 40; i++) {
-        hearts.push(new Heart(
-            Math.random() * canvas.width,
-            Math.random() * canvas.height
-        ));
-    }
+    overlay.style.display = "flex";
 
     setTimeout(() => {
-        document.getElementById("overlay").style.display = "none";
+        overlay.style.display = "none";
     }, 3000);
 };
-
 </script>
 
 </body>
