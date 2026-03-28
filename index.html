@@ -58,7 +58,7 @@ button {
     position: fixed;
     width: 100%;
     height: 100%;
-    background: rgba(255,182,193,0.6);
+    background: rgba(255,182,193,0.7);
     display: none;
     justify-content: center;
     align-items: center;
@@ -69,7 +69,7 @@ button {
     background: white;
     padding: 30px;
     border-radius: 20px;
-    animation: pop 0.3s ease;
+    animation: pop 0.2s ease;
 }
 
 @keyframes pop {
@@ -89,7 +89,7 @@ canvas {
 <body>
 
 <div class="container">
-    <h1>Hey Sonali...❤️</h1>
+    <h1>Hey Sonali.❤️</h1>
     <p>I want to grow old with you, laugh with you, and love you endlessly.</p>
     <p>Will you be mine? 💖</p>
 
@@ -134,31 +134,35 @@ class Heart {
     }
 
     update() {
-        // 🧲 Attraction to cursor
         let dx = mouse.x - this.x;
         let dy = mouse.y - this.y;
 
-        this.x += dx * 0.002 + this.dx;
-        this.y += dy * 0.002 + this.dy;
+        this.x += dx * 0.01 + this.dx;
+        this.y += dy * 0.01 + this.dy;
 
-        // bounce screen edges
         if (this.x <= 0 || this.x >= canvas.width) this.dx *= -1;
         if (this.y <= 0 || this.y >= canvas.height) this.dy *= -1;
     }
 }
 
-// 💖 CREATE MANY HEARTS
-for (let i = 0; i < 120; i++) {
+// 💖 CREATE HEARTS
+for (let i = 0; i < 150; i++) {
     hearts.push(new Heart());
 }
 
-// 🎯 MOUSE TRACK
+// 🖱️ DESKTOP MOUSE
 window.addEventListener("mousemove", (e) => {
     mouse.x = e.clientX;
     mouse.y = e.clientY;
 });
 
-// 🎬 ANIMATION LOOP
+// 📱 MOBILE TOUCH
+window.addEventListener("touchmove", (e) => {
+    mouse.x = e.touches[0].clientX;
+    mouse.y = e.touches[0].clientY;
+});
+
+// 🎬 ANIMATION
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -169,21 +173,33 @@ function animate() {
 
     requestAnimationFrame(animate);
 }
-
 animate();
 
-// 😈 NO BUTTON FULL SCREEN ESCAPE
-document.getElementById("noBtn").onmouseover = function () {
-    this.style.position = "fixed";
+// 😈 MOVE NO BUTTON FUNCTION
+function moveNoButton(btn) {
+    btn.style.position = "fixed";
 
-    const maxX = window.innerWidth - this.offsetWidth;
-    const maxY = window.innerHeight - this.offsetHeight;
+    const maxX = window.innerWidth - btn.offsetWidth;
+    const maxY = window.innerHeight - btn.offsetHeight;
 
-    this.style.left = Math.random() * maxX + "px";
-    this.style.top = Math.random() * maxY + "px";
+    btn.style.left = Math.random() * maxX + "px";
+    btn.style.top = Math.random() * maxY + "px";
+}
+
+const noBtn = document.getElementById("noBtn");
+
+// 🖱️ DESKTOP
+noBtn.onmouseover = function () {
+    moveNoButton(this);
 };
 
-// 💖 YES CLICK
+// 📱 MOBILE
+noBtn.addEventListener("touchstart", function (e) {
+    e.preventDefault(); // stop click
+    moveNoButton(this);
+});
+
+// 💖 YES BUTTON
 document.getElementById("yesBtn").onclick = () => {
     const overlay = document.getElementById("overlay");
 
