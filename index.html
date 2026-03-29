@@ -100,7 +100,7 @@ canvas {
 <div id="overlay">
     <div class="popup" id="popup">
         <h2>💖 Saurabh ❤️ Sonali 💖</h2>
-        <p id="popupText"></p>
+        <p>I choose you today and every day after this...❤️</p>
     </div>
 </div>
 
@@ -123,15 +123,13 @@ let isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
 // ==================== BACKGROUND HEARTS ====================
 class Heart {
-    constructor() {
-        this.reset();
-    }
+    constructor() { this.reset(); }
     reset() {
         this.x = Math.random() * bgCanvas.width;
         this.y = Math.random() * bgCanvas.height;
         this.size = Math.random() * 20 + 10;
-        this.dx = (Math.random()-0.5) * 1.5;
-        this.dy = (Math.random()-0.5) * 1.5;
+        this.dx = (Math.random()-0.5) * 1.2;
+        this.dy = (Math.random()-0.5) * 1.2;
     }
     update() {
         let dx = mouse.x - this.x;
@@ -164,11 +162,8 @@ animateBG();
 // ==================== MOUSE/GYRO ====================
 if(isMobile && window.DeviceOrientationEvent) {
     window.addEventListener("deviceorientation", e=>{
-        // gamma left/right - tilt
-        let gx = e.gamma; // -90 to 90
-        let gy = e.beta; // -180 to 180
-        mouse.x = bgCanvas.width/2 + gx*10;
-        mouse.y = bgCanvas.height/2 + gy*10;
+        mouse.x = bgCanvas.width/2 + e.gamma*10;
+        mouse.y = bgCanvas.height/2 + e.beta*10;
     });
 } else {
     window.addEventListener("mousemove", e=>{
@@ -177,22 +172,20 @@ if(isMobile && window.DeviceOrientationEvent) {
     });
 }
 
-// ==================== EFFECTS ====================
+// ==================== PARTICLE EFFECT ====================
 class Particle {
     constructor(x,y,char,color){
-        this.x = x;
-        this.y = y;
-        this.vx = (Math.random()-0.5)*6;
-        this.vy = (Math.random()-0.5)*6;
+        this.x = x; this.y = y;
+        this.vx = (Math.random()-0.5)*5;
+        this.vy = (Math.random()-0.5)*5;
         this.alpha = 1;
-        this.char = char || "❤️";
-        this.color = color || "red";
-        this.size = Math.random()*20+10;
+        this.char = char;
+        this.color = color;
+        this.size = Math.random()*15+10;
     }
     update(){
         this.x += this.vx;
         this.y += this.vy;
-        this.vy += 0.05; // gravity
         this.alpha -= 0.02;
     }
     draw(ctx){
@@ -205,13 +198,12 @@ class Particle {
 }
 
 let particles = [];
-
 function animateEffect() {
     effectCtx.clearRect(0,0,effectCanvas.width,effectCanvas.height);
     for(let i=particles.length-1;i>=0;i--){
         particles[i].update();
         particles[i].draw(effectCtx);
-        if(particles[i].alpha <=0) particles.splice(i,1);
+        if(particles[i].alpha<=0) particles.splice(i,1);
     }
     requestAnimationFrame(animateEffect);
 }
@@ -220,34 +212,15 @@ animateEffect();
 // ==================== YES BUTTON ====================
 const yesBtn = document.getElementById("yesBtn");
 const popup = document.getElementById("popup");
-const popupText = document.getElementById("popupText");
 
 yesBtn.onclick = () => {
-    // Add explosion particles
     let rect = yesBtn.getBoundingClientRect();
-    for(let i=0;i<40;i++){
+    for(let i=0;i<30;i++){
         particles.push(new Particle(rect.left+rect.width/2, rect.top+rect.height/2, "❤️", ["#ff6b81","#ff4757","#ff7f50"][Math.floor(Math.random()*3)]));
-    }
-    for(let i=0;i<40;i++){
         particles.push(new Particle(rect.left+rect.width/2, rect.top+rect.height/2, "🎉", ["#ffd700","#00ffea","#ff69b4"][Math.floor(Math.random()*3)]));
     }
-
-    // Typewriter popup
-    popupText.innerHTML = "";
-    let message = "I choose you today and every day after this...❤️";
     popup.classList.add("show");
-    let i=0;
-    let typeInterval = setInterval(()=>{
-        popupText.innerHTML += message[i];
-        i++;
-        if(i>=message.length) clearInterval(typeInterval);
-    },50);
-
-    // Hide after 3 seconds
-    setTimeout(()=>{
-        popup.classList.remove("show");
-        popupText.innerHTML = "";
-    },3000);
+    setTimeout(()=>{popup.classList.remove("show");},3000);
 };
 
 // ==================== NO BUTTON ====================
