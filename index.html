@@ -10,7 +10,6 @@
         :root {
             --primary-pink: #ff4d6d;
             --soft-pink: #ffccd5;
-            --deep-rose: #c9184a;
         }
 
         body {
@@ -31,29 +30,21 @@
             padding: 40px;
             border-radius: 30px;
             text-align: center;
-            width: 320px;
-            box-shadow: 0 20px 60px rgba(255, 77, 109, 0.25);
+            width: 300px;
+            box-shadow: 0 20px 60px rgba(255, 77, 109, 0.2);
             z-index: 10;
             border: 2px solid #ffffff;
-            transition: all 0.3s ease;
         }
 
         h1 { color: var(--primary-pink); margin: 0 0 10px 0; font-size: 26px; }
-        p { color: #594d5b; line-height: 1.5; margin-bottom: 5px; }
-        
-        #missCount {
-            font-size: 12px;
-            color: #a38088;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
+        p { color: #594d5b; line-height: 1.5; margin-bottom: 20px; }
 
         .buttons {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 20px;
-            min-height: 100px;
+            min-height: 80px;
         }
 
         button {
@@ -63,16 +54,15 @@
             cursor: pointer;
             font-size: 18px;
             font-weight: 700;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         #yesBtn {
             background: var(--primary-pink);
             color: white;
-            box-shadow: 0 8px 20px rgba(255, 77, 109, 0.4);
+            box-shadow: 0 8px 20px rgba(255, 77, 109, 0.3);
+            z-index: 5;
         }
-
-        #yesBtn:active { transform: scale(0.9); }
 
         #noBtn {
             background: #fff;
@@ -82,18 +72,10 @@
             white-space: nowrap;
         }
 
-        /* Shake animation for the container when she tries to click No */
-        .shake { animation: shake 0.4s ease-in-out; }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
-        }
-
         #overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.8);
             display: none;
             justify-content: center;
             align-items: center;
@@ -102,12 +84,12 @@
 
         .popup {
             background: white;
-            padding: 50px;
-            border-radius: 40px;
+            padding: 40px;
+            border-radius: 30px;
             text-align: center;
-            box-shadow: 0 30px 80px rgba(0,0,0,0.1);
-            border: 4px solid var(--primary-pink);
-            animation: pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 80px rgba(255, 77, 109, 0.3);
+            border: 3px solid var(--primary-pink);
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
@@ -122,7 +104,6 @@
 <div class="container" id="mainBox">
     <h1>Hey Sonali... ❤️</h1>
     <p>Will you be mine forever?</p>
-    <div id="missCount">Attempts to escape: 0</div>
 
     <div class="buttons">
         <button id="yesBtn">Yes ❤️</button>
@@ -132,9 +113,9 @@
 
 <div id="overlay">
     <div class="popup">
-        <h2 style="color: var(--primary-pink); font-size: 2.8rem; margin: 0;">YAY! 💖</h2>
+        <h2 style="color: var(--primary-pink); font-size: 2.5rem; margin: 0;">YAY! 💖</h2>
         <h3 style="color: #444;">Saurabh ❤️ Sonali</h3>
-        <p>Best decision ever! I love you! ✨</p>
+        <p>I choose you today and every day after this...❤️</p>
     </div>
 </div>
 
@@ -156,19 +137,18 @@
         reset() {
             this.x = Math.random() * canvas.width;
             this.y = Math.random() * canvas.height;
-            this.size = Math.random() * 25 + 10;
-            this.speedX = (Math.random() - 0.5) * 1.5;
-            this.speedY = (Math.random() - 0.5) * 1.5;
+            this.size = Math.random() * 22 + 10;
+            this.speedX = (Math.random() - 0.5) * 1.2;
+            this.speedY = (Math.random() - 0.5) * 1.2;
             this.opacity = Math.random() * 0.4 + 0.2;
         }
         update() {
-            // Attraction Logic
             let dx = mouse.x - this.x;
             let dy = mouse.y - this.y;
             let dist = Math.sqrt(dx*dx + dy*dy);
             if (dist < 250) {
-                this.x += dx * 0.015;
-                this.y += dy * 0.015;
+                this.x += dx * 0.01;
+                this.y += dy * 0.01;
             }
             this.x += this.speedX;
             this.y += this.speedY;
@@ -185,14 +165,14 @@
 
     for (let i = 0; i < 60; i++) hearts.push(new Heart());
 
-    // --- Inputs ---
+    // --- Cursor & Gyro Sensors ---
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     if(!isMobile) {
         window.addEventListener("mousemove", (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
     } else if (window.DeviceOrientationEvent) {
         window.addEventListener('deviceorientation', (e) => {
-            mouse.x = (canvas.width/2) + (e.gamma * 12);
-            mouse.y = (canvas.height/2) + (e.beta * 12);
+            mouse.x = (canvas.width/2) + (e.gamma * 10);
+            mouse.y = (canvas.height/2) + (e.beta * 10);
         });
     }
 
@@ -203,56 +183,50 @@
     }
     animate();
 
-    // --- The "Playable" Logic ---
+    // --- Button Logic ---
     const noBtn = document.getElementById("noBtn");
     const yesBtn = document.getElementById("yesBtn");
-    const mainBox = document.getElementById("mainBox");
-    const countLabel = document.getElementById("missCount");
-    
-    let misses = 0;
+    const overlay = document.getElementById("overlay");
     let yesScale = 1;
 
     const moveNo = (e) => {
         if (e) e.preventDefault();
         
-        misses++;
-        countLabel.innerText = `Attempts to escape: ${misses}`;
+        // Mathematical Safe Boundaries
+        const btnWidth = noBtn.offsetWidth;
+        const btnHeight = noBtn.offsetHeight;
+        const margin = 20; // Ensure it doesn't touch the absolute edge
 
-        // Safe Zone Calculation:
-        // window.innerWidth - buttonWidth gives the rightmost point
-        // We use a 20px margin so it never touches the absolute edge
-        const margin = 20;
-        const maxX = window.innerWidth - noBtn.offsetWidth - margin;
-        const maxY = window.innerHeight - noBtn.offsetHeight - margin;
+        const maxX = window.innerWidth - btnWidth - margin;
+        const maxY = window.innerHeight - btnHeight - margin;
 
+        // Ensure random values are within screen bounds
         const randomX = Math.max(margin, Math.random() * maxX);
         const randomY = Math.max(margin, Math.random() * maxY);
 
         noBtn.style.position = "fixed";
         noBtn.style.left = `${randomX}px`;
         noBtn.style.top = `${randomY}px`;
+        noBtn.style.margin = "0";
 
-        // Make the "Yes" button grow
+        // "Yes" button grows
         yesScale += 0.15;
         yesBtn.style.transform = `scale(${yesScale})`;
-
-        // Shake the box for effect
-        mainBox.classList.remove("shake");
-        void mainBox.offsetWidth; // Trigger reflow
-        mainBox.classList.add("shake");
-        
-        // Change "No" text randomly
-        const jokes = ["No way!", "Nice try!", "Think again", "Try harder!", "Missed!", "Can't catch me"];
-        noBtn.innerText = jokes[Math.floor(Math.random() * jokes.length)];
     };
 
     noBtn.addEventListener("mouseover", moveNo);
     noBtn.addEventListener("touchstart", moveNo);
 
     yesBtn.onclick = () => {
-        document.getElementById("overlay").style.display = "flex";
-        // Final heart burst
-        hearts.forEach(h => { h.speedX *= 10; h.speedY *= 10; });
+        overlay.style.display = "flex";
+        
+        // Success Burst
+        hearts.forEach(h => { h.speedX *= 8; h.speedY *= 8; h.opacity = 0.8; });
+
+        // Popup stays only for 3 seconds
+        setTimeout(() => {
+            overlay.style.display = "none";
+        }, 3000);
     };
 </script>
 
