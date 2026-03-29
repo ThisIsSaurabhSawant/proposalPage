@@ -1,94 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Just One Question ❤️</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Just One Question ❤️</title>
 
-<style>
-body {
-    margin: 0;
-    height: 100vh;
-    background: linear-gradient(to right, #ff9a9e, #fad0c4);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: Arial, sans-serif;
-    overflow: hidden;
-}
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            touch-action: none; /* Prevents scrolling on mobile while chasing the button */
+        }
 
-.container {
-    background: white;
-    padding: 40px;
-    border-radius: 20px;
-    text-align: center;
-    width: 320px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    z-index: 10;
-}
+        .container {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            width: 350px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
 
-.buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-}
+        h1 {
+            color: #d63384;
+            margin-bottom: 10px;
+        }
 
-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 16px;
-}
+        p {
+            color: #444;
+            line-height: 1.5;
+        }
 
-#yesBtn {
-    background: #28a745;
-    color: white;
-}
+        .buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 30px;
+            min-height: 100px; /* Space for growing button */
+        }
 
-#noBtn {
-    background: #dc3545;
-    color: white;
-}
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
 
-#overlay {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    background: rgba(255,182,193,0.6);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
+        #yesBtn {
+            background: #ff4757;
+            color: white;
+            z-index: 11;
+        }
 
-.popup {
-    background: white;
-    padding: 30px;
-    border-radius: 20px;
-    animation: pop 0.3s ease;
-    text-align: center;
-}
+        #yesBtn:hover {
+            transform: scale(1.1);
+            background: #ff6b81;
+        }
 
-@keyframes pop {
-    from { transform: scale(0.5); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
+        #noBtn {
+            background: #f1f2f6;
+            color: #57606f;
+            position: relative;
+        }
 
-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1;
-}
-</style>
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 182, 193, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .popup {
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes pop {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+    </style>
 </head>
-
 <body>
+
+<canvas id="canvas"></canvas>
 
 <div class="container">
     <h1>Hey Sonali...❤️</h1>
     <p>I want to grow old with you, laugh with you, and love you endlessly.</p>
-    <p>Will you be mine? 💖</p>
+    <p><b>Will you be mine? 💖</b></p>
 
     <div class="buttons">
         <button id="yesBtn">Yes ❤️</button>
@@ -98,125 +130,117 @@ canvas {
 
 <div id="overlay">
     <div class="popup">
-        <h2>💖 Saurabh ❤️ Sonali 💖</h2>
-        <p>I choose you today and every day after this...❤️</p>
+        <h2 style="font-size: 3rem; margin: 0;">🎉 ✨ 💖</h2>
+        <h2 style="color: #ff4757;">Saurabh ❤️ Sonali</h2>
+        <p style="font-size: 1.2rem;">I choose you today and every day after this...❤️</p>
     </div>
 </div>
 
-<canvas id="canvas"></canvas>
-
 <script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let hearts = [];
+    const heartEmojis = ["❤️", "💖", "💝", "💕", "🌸", "✨"];
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+    // Set Canvas Size
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
 
-let hearts = [];
-const MAX_HEARTS = 120; // limit hearts to prevent lag
-let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
-
-// Heart class
-class Heart {
-    constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 20 + 10;
-        this.dx = (Math.random() - 0.5) * 1.5;
-        this.dy = (Math.random() - 0.5) * 1.5;
+    // Heart Particle Class
+    class Heart {
+        constructor() {
+            this.reset();
+        }
+        reset() {
+            this.x = Math.random() * canvas.width;
+            this.y = canvas.height + 50;
+            this.size = Math.random() * 15 + 10;
+            this.speed = Math.random() * 1.5 + 0.5;
+            this.opacity = Math.random() * 0.6 + 0.4;
+            this.emoji = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+            this.swing = Math.random() * 2;
+            this.swingSpeed = Math.random() * 0.02;
+        }
+        update() {
+            this.y -= this.speed;
+            this.x += Math.sin(this.y * this.swingSpeed) * this.swing;
+            if (this.y < -50) this.reset();
+        }
+        draw() {
+            ctx.globalAlpha = this.opacity;
+            ctx.font = `${this.size}px Arial`;
+            ctx.fillText(this.emoji, this.x, this.y);
+        }
     }
 
-    draw() {
-        ctx.font = this.size + "px Arial";
-        ctx.fillText("❤️", this.x, this.y);
+    // Initialize hearts
+    for (let i = 0; i < 40; i++) hearts.push(new Heart());
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        hearts.forEach(h => {
+            h.update();
+            h.draw();
+        });
+        requestAnimationFrame(animate);
     }
+    animate();
 
-    update() {
-        // Attraction to mouse/gyro
-        let dx = mouse.x - this.x;
-        let dy = mouse.y - this.y;
+    // Logic for Buttons
+    const noBtn = document.getElementById("noBtn");
+    const yesBtn = document.getElementById("yesBtn");
+    let currentYesSize = 18;
+    let paddingVertical = 12;
+    let paddingHorizontal = 25;
 
-        this.x += dx * 0.002 + this.dx;
-        this.y += dy * 0.002 + this.dy;
+    const escape = () => {
+        // Move the "No" button randomly
+        const maxX = window.innerWidth - noBtn.offsetWidth - 20;
+        const maxY = window.innerHeight - noBtn.offsetHeight - 20;
+        
+        const randomX = Math.max(10, Math.random() * maxX);
+        const randomY = Math.max(10, Math.random() * maxY);
+        
+        noBtn.style.position = "fixed";
+        noBtn.style.left = `${randomX}px`;
+        noBtn.style.top = `${randomY}px`;
 
-        // Keep hearts inside screen
-        if (this.x <= 0) { this.x = 0; this.dx *= -1; }
-        if (this.x >= canvas.width) { this.x = canvas.width; this.dx *= -1; }
-        if (this.y <= 0) { this.y = 0; this.dy *= -1; }
-        if (this.y >= canvas.height) { this.y = canvas.height; this.dy *= -1; }
-    }
-}
+        // Make the "Yes" button grow bigger!
+        currentYesSize += 8;
+        paddingVertical += 4;
+        paddingHorizontal += 8;
+        
+        yesBtn.style.fontSize = `${currentYesSize}px`;
+        yesBtn.style.padding = `${paddingVertical}px ${paddingHorizontal}px`;
+        
+        // Optional: Change No button text
+        const noTexts = ["Are you sure?", "Really?", "Think again!", "Pwease? 🥺", "Don't do this!", "You're breaking my heart!"];
+        noBtn.innerText = noTexts[Math.floor(Math.random() * noTexts.length)];
+    };
 
-// Create initial hearts
-for (let i = 0; i < MAX_HEARTS; i++) hearts.push(new Heart());
-
-// Detect device type for gyro
-let isMobile = /Mobi|Android/i.test(navigator.userAgent);
-
-// Mouse move for desktop
-if(!isMobile){
-    window.addEventListener("mousemove", (e)=>{
-        mouse.x = e.clientX;
-        mouse.y = e.clientY;
+    noBtn.addEventListener("mouseover", escape);
+    noBtn.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        escape();
     });
-}
 
-// Gyroscope for mobile
-if(isMobile && window.DeviceOrientationEvent){
-    window.addEventListener('deviceorientation', function(event){
-        let gamma = event.gamma || 0; // left-right tilt
-        let beta = event.beta || 0;   // front-back tilt
-
-        // Map tilt to canvas coordinates
-        mouse.x = canvas.width/2 + gamma * 8; // sensitivity adjust
-        mouse.y = canvas.height/2 + beta * 8;
-
-        // clamp to screen
-        mouse.x = Math.max(0, Math.min(canvas.width, mouse.x));
-        mouse.y = Math.max(0, Math.min(canvas.height, mouse.y));
-    }, true);
-}
-
-// Animation loop
-function animate(){
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    hearts.forEach(h => { h.update(); h.draw(); });
-    requestAnimationFrame(animate);
-}
-animate();
-
-// NO button playful
-const noBtn = document.getElementById("noBtn");
-noBtn.onmouseover = function(){
-    const maxX = window.innerWidth - this.offsetWidth;
-    const maxY = window.innerHeight - this.offsetHeight;
-    this.style.position = "fixed";
-    this.style.left = Math.random() * maxX + "px";
-    this.style.top = Math.random() * maxY + "px";
-};
-
-// YES button click with heart burst and popup
-const yesBtn = document.getElementById("yesBtn");
-yesBtn.onclick = () => {
-    const overlay = document.getElementById("overlay");
-    overlay.style.display = "flex";
-
-    setTimeout(() => { overlay.style.display = "none"; }, 3000);
-
-    // Heart burst effect
-    hearts.forEach(h => {
-        h.dx += (Math.random() - 0.5) * 2;
-        h.dy += (Math.random() - 0.5) * 2;
-        h.size += 2; // small pop effect
-    });
-};
-
-// Handle resize
-window.addEventListener("resize", ()=>{
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-});
-
+    yesBtn.onclick = () => {
+        document.getElementById("overlay").style.display = "flex";
+        
+        // Explosion effect: Add 100 fast-moving hearts
+        for(let i=0; i<100; i++) {
+            const burstHeart = new Heart();
+            burstHeart.y = window.innerHeight / 2;
+            burstHeart.x = window.innerWidth / 2;
+            burstHeart.speed = (Math.random() - 0.5) * 15;
+            burstHeart.swing = (Math.random() - 0.5) * 15;
+            hearts.push(burstHeart);
+        }
+    };
 </script>
 
 </body>
