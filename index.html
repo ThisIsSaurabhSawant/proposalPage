@@ -24,7 +24,7 @@ body {
     width: 320px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     z-index: 10;
-    transition: 0.5s;
+    transition: 0.4s;
 }
 
 .blur {
@@ -44,6 +44,7 @@ button {
     cursor: pointer;
     font-size: 16px;
     position: absolute;
+    transition: 0.2s;
 }
 
 #yesBtn {
@@ -67,7 +68,7 @@ canvas {
     z-index: 1;
 }
 
-/* 💖 POPUP */
+/* POPUP */
 #overlay {
     position: fixed;
     width: 100%;
@@ -84,7 +85,7 @@ canvas {
     padding: 40px;
     border-radius: 20px;
     text-align: center;
-    animation: pop 0.4s ease;
+    animation: pop 0.3s ease;
 }
 
 @keyframes pop {
@@ -107,7 +108,6 @@ canvas {
     </div>
 </div>
 
-<!-- 💖 POPUP -->
 <div id="overlay">
     <div class="popup">
         <h2>💖 Wow! 💖</h2>
@@ -134,18 +134,31 @@ typeWriter(title,"Hey Sonali...❤️");
 setTimeout(()=>typeWriter(line1,"I want to grow old with you..."),800);
 setTimeout(()=>typeWriter(line2,"Will you be mine? 💖"),2000);
 
-// 😈 SMART NO BUTTON
+// 😈 PLAYFUL NO BUTTON
 let level=0;
+const messages=[
+    "No 😅",
+    "Are you sure? 🤔",
+    "Think again 😏",
+    "Last chance 😜",
+    "You can't escape 😆"
+];
+
 noBtn.onmouseover=()=>{
     level++;
     noBtn.style.position="fixed";
 
-    if(level===3) noBtn.style.transform="scale(0.7)";
-    if(level===4) noBtn.innerText="Are you sure? 😏";
-    if(level>=5) noBtn.style.display="none";
+    if(level < messages.length){
+        noBtn.innerText = messages[level];
+    } else {
+        noBtn.style.transform="scale(0.6)";
+    }
 
-    noBtn.style.left=Math.random()*(innerWidth-100)+"px";
-    noBtn.style.top=Math.random()*(innerHeight-50)+"px";
+    const maxX = window.innerWidth - noBtn.offsetWidth;
+    const maxY = window.innerHeight - noBtn.offsetHeight;
+
+    noBtn.style.left = Math.random()*maxX+"px";
+    noBtn.style.top = Math.random()*maxY+"px";
 };
 
 // 💖 CANVAS
@@ -154,7 +167,7 @@ const ctx=canvas.getContext("2d");
 canvas.width=innerWidth;
 canvas.height=innerHeight;
 
-// 💖 HEARTS
+// HEARTS
 let hearts=[];
 for(let i=0;i<100;i++){
     hearts.push({
@@ -179,7 +192,7 @@ function drawHearts(){
     });
 }
 
-// 🎉 PARTICLES
+// PARTICLES
 let particles=[];
 function explode(){
     for(let i=0;i<150;i++){
@@ -207,17 +220,20 @@ function drawParticles(){
 yesBtn.onclick=()=>{
     explode();
 
-    // vibration
     if(navigator.vibrate) navigator.vibrate([200,100,200]);
 
-    // blur background
     document.getElementById("mainBox").classList.add("blur");
+    const overlay = document.getElementById("overlay");
+    overlay.style.display="flex";
 
-    // show popup
-    document.getElementById("overlay").style.display="flex";
+    // ⏱ AUTO CLOSE AFTER 3 SEC
+    setTimeout(()=>{
+        overlay.style.display="none";
+        document.getElementById("mainBox").classList.remove("blur");
+    },3000);
 };
 
-// 🎬 ANIMATION
+// ANIMATION
 function animate(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     drawHearts();
@@ -226,7 +242,6 @@ function animate(){
 }
 animate();
 
-// 📱 RESIZE
 onresize=()=>{
     canvas.width=innerWidth;
     canvas.height=innerHeight;
