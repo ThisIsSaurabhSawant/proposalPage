@@ -7,12 +7,12 @@
 body {
     margin: 0;
     height: 100vh;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
     background: linear-gradient(to right, #ff9a9e, #fad0c4);
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: Arial, sans-serif;
-    overflow: hidden;
 }
 
 .container {
@@ -26,9 +26,9 @@ body {
 }
 
 .buttons {
+    margin-top: 20px;
     display: flex;
     justify-content: space-between;
-    margin-top: 20px;
 }
 
 button {
@@ -39,18 +39,25 @@ button {
     font-size: 16px;
 }
 
-#yesBtn { background: #28a745; color: white; }
-#noBtn { background: #dc3545; color: white; }
+#yesBtn {
+    background: #28a745;
+    color: white;
+}
+
+#noBtn {
+    background: #dc3545;
+    color: white;
+}
 
 #overlay {
     position: fixed;
     width: 100%;
     height: 100%;
-    background: rgba(255,182,193,0.6);
-    display: none;
+    display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    pointer-events: none;
 }
 
 .popup {
@@ -58,12 +65,23 @@ button {
     padding: 30px;
     border-radius: 20px;
     text-align: center;
-    animation: pop 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.3s ease;
 }
 
-@keyframes pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.popup.show {
+    opacity: 1;
+    transform: scale(1);
+}
 
-canvas { position: fixed; top: 0; left: 0; z-index: 1; }
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
 </style>
 </head>
 <body>
@@ -80,151 +98,176 @@ canvas { position: fixed; top: 0; left: 0; z-index: 1; }
 </div>
 
 <div id="overlay">
-    <div class="popup">
-        <h2 id="popupTitle">💖 Saurabh ❤️ Sonali 💖</h2>
+    <div class="popup" id="popup">
+        <h2>💖 Saurabh ❤️ Sonali 💖</h2>
         <p id="popupText"></p>
     </div>
 </div>
 
-<canvas id="canvas"></canvas>
+<canvas id="bgCanvas"></canvas>
+<canvas id="effectCanvas"></canvas>
 
 <script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+const bgCanvas = document.getElementById("bgCanvas");
+const bgCtx = bgCanvas.getContext("2d");
+bgCanvas.width = window.innerWidth;
+bgCanvas.height = window.innerHeight;
 
-let hearts = [];
-const MAX_HEARTS = 120;
-let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+const effectCanvas = document.getElementById("effectCanvas");
+const effectCtx = effectCanvas.getContext("2d");
+effectCanvas.width = window.innerWidth;
+effectCanvas.height = window.innerHeight;
+
+let mouse = {x: bgCanvas.width/2, y: bgCanvas.height/2};
 let isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
-// Heart class
+// ==================== BACKGROUND HEARTS ====================
 class Heart {
-    constructor(x, y, size, dx, dy) {
-        this.x = x || Math.random() * canvas.width;
-        this.y = y || Math.random() * canvas.height;
-        this.size = size || Math.random() * 20 + 10;
-        this.dx = dx || (Math.random() - 0.5) * 1.5;
-        this.dy = dy || (Math.random() - 0.5) * 1.5;
+    constructor() {
+        this.reset();
     }
-    draw() { ctx.font = this.size + "px Arial"; ctx.fillText("❤️", this.x, this.y); }
+    reset() {
+        this.x = Math.random() * bgCanvas.width;
+        this.y = Math.random() * bgCanvas.height;
+        this.size = Math.random() * 20 + 10;
+        this.dx = (Math.random()-0.5) * 1.5;
+        this.dy = (Math.random()-0.5) * 1.5;
+    }
     update() {
-        let dx = mouse.x - this.x, dy = mouse.y - this.y;
+        let dx = mouse.x - this.x;
+        let dy = mouse.y - this.y;
         this.x += dx * 0.002 + this.dx;
         this.y += dy * 0.002 + this.dy;
-        if(this.x <=0){ this.x=0; this.dx*=-1; }
-        if(this.x>=canvas.width){ this.x=canvas.width; this.dx*=-1; }
-        if(this.y<=0){ this.y=0; this.dy*=-1; }
-        if(this.y>=canvas.height){ this.y=canvas.height; this.dy*=-1; }
+
+        // stay inside screen
+        if(this.x < 0) this.x = 0;
+        if(this.x > bgCanvas.width) this.x = bgCanvas.width;
+        if(this.y < 0) this.y = 0;
+        if(this.y > bgCanvas.height) this.y = bgCanvas.height;
+    }
+    draw() {
+        bgCtx.font = this.size + "px Arial";
+        bgCtx.fillText("❤️", this.x, this.y);
     }
 }
 
-// Create initial hearts
-for(let i=0;i<MAX_HEARTS;i++) hearts.push(new Heart());
+let hearts = [];
+for(let i=0;i<100;i++) hearts.push(new Heart());
 
-// Mouse/gyro tracking
-if(!isMobile){
-    window.addEventListener("mousemove",(e)=>{mouse.x=e.clientX;mouse.y=e.clientY;});
-}else if(window.DeviceOrientationEvent){
-    window.addEventListener('deviceorientation', function(e){
-        let gamma=e.gamma||0, beta=e.beta||0;
-        mouse.x = canvas.width/2 + gamma*8;
-        mouse.y = canvas.height/2 + beta*8;
-        mouse.x=Math.max(0,Math.min(canvas.width,mouse.x));
-        mouse.y=Math.max(0,Math.min(canvas.height,mouse.y));
+function animateBG() {
+    bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
+    hearts.forEach(h=>{h.update(); h.draw();});
+    requestAnimationFrame(animateBG);
+}
+animateBG();
+
+// ==================== MOUSE/GYRO ====================
+if(isMobile && window.DeviceOrientationEvent) {
+    window.addEventListener("deviceorientation", e=>{
+        // gamma left/right - tilt
+        let gx = e.gamma; // -90 to 90
+        let gy = e.beta; // -180 to 180
+        mouse.x = bgCanvas.width/2 + gx*10;
+        mouse.y = bgCanvas.height/2 + gy*10;
+    });
+} else {
+    window.addEventListener("mousemove", e=>{
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
     });
 }
 
-// Animation loop
-function animate(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    hearts.forEach(h=>{ h.update(); h.draw(); });
-    confetti.forEach(c=>{c.update();c.draw();});
-    requestAnimationFrame(animate);
-}
-animate();
-
-// NO button playful
-const noBtn = document.getElementById("noBtn");
-noBtn.onmouseover = function(){
-    const maxX=window.innerWidth-this.offsetWidth;
-    const maxY=window.innerHeight-this.offsetHeight;
-    this.style.position="fixed";
-    this.style.left=Math.random()*maxX+"px";
-    this.style.top=Math.random()*maxY+"px";
-};
-
-// YES button click with heart explosion and typewriter + confetti
-const yesBtn=document.getElementById("yesBtn");
-const overlay=document.getElementById("overlay");
-const popupText=document.getElementById("popupText");
-
-yesBtn.onclick = ()=>{
-    overlay.style.display="flex";
-    typeWriter("I choose you today and every day after this...❤️", popupText, 50);
-    burstHearts(mouse.x, mouse.y);
-    startConfetti();
-    setTimeout(()=>{
-        overlay.style.display="none";
-        popupText.textContent="";
-        stopConfetti();
-    },3000);
-};
-
-// Typewriter function
-function typeWriter(text, element, speed){
-    element.textContent="";
-    let i=0;
-    let interval = setInterval(()=>{
-        if(i<text.length){
-            element.textContent+=text.charAt(i);
-            i++;
-        }else{
-            clearInterval(interval);
-        }
-    }, speed);
-}
-
-// Heart burst effect
-function burstHearts(x,y){
-    for(let i=0;i<20;i++){
-        if(hearts.length>=MAX_HEARTS) break;
-        hearts.push(new Heart(x,y,Math.random()*20+10,(Math.random()-0.5)*4,(Math.random()-0.5)*4));
+// ==================== EFFECTS ====================
+class Particle {
+    constructor(x,y,char,color){
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random()-0.5)*6;
+        this.vy = (Math.random()-0.5)*6;
+        this.alpha = 1;
+        this.char = char || "❤️";
+        this.color = color || "red";
+        this.size = Math.random()*20+10;
+    }
+    update(){
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.05; // gravity
+        this.alpha -= 0.02;
+    }
+    draw(ctx){
+        ctx.globalAlpha = this.alpha;
+        ctx.font = this.size+"px Arial";
+        ctx.fillStyle = this.color;
+        ctx.fillText(this.char,this.x,this.y);
+        ctx.globalAlpha = 1;
     }
 }
 
-// Confetti
-let confetti=[];
-function ConfettiPiece(){
-    this.x=Math.random()*canvas.width;
-    this.y=Math.random()*canvas.height;
-    this.size=Math.random()*5+5;
-    this.color="hsl("+Math.random()*360+",100%,70%)";
-    this.dx=(Math.random()-0.5)*2;
-    this.dy=Math.random()*3+2;
-}
-ConfettiPiece.prototype.draw=function(){
-    ctx.fillStyle=this.color;
-    ctx.fillRect(this.x,this.y,this.size,this.size);
-}
-ConfettiPiece.prototype.update=function(){
-    this.x+=this.dx;
-    this.y+=this.dy;
-    if(this.y>canvas.height){ this.y=0; this.x=Math.random()*canvas.width; }
-}
+let particles = [];
 
-function startConfetti(){
-    confetti=[];
-    for(let i=0;i<100;i++) confetti.push(new ConfettiPiece());
+function animateEffect() {
+    effectCtx.clearRect(0,0,effectCanvas.width,effectCanvas.height);
+    for(let i=particles.length-1;i>=0;i--){
+        particles[i].update();
+        particles[i].draw(effectCtx);
+        if(particles[i].alpha <=0) particles.splice(i,1);
+    }
+    requestAnimationFrame(animateEffect);
 }
-function stopConfetti(){ confetti=[]; }
+animateEffect();
 
-// Resize handling
+// ==================== YES BUTTON ====================
+const yesBtn = document.getElementById("yesBtn");
+const popup = document.getElementById("popup");
+const popupText = document.getElementById("popupText");
+
+yesBtn.onclick = () => {
+    // Add explosion particles
+    let rect = yesBtn.getBoundingClientRect();
+    for(let i=0;i<40;i++){
+        particles.push(new Particle(rect.left+rect.width/2, rect.top+rect.height/2, "❤️", ["#ff6b81","#ff4757","#ff7f50"][Math.floor(Math.random()*3)]));
+    }
+    for(let i=0;i<40;i++){
+        particles.push(new Particle(rect.left+rect.width/2, rect.top+rect.height/2, "🎉", ["#ffd700","#00ffea","#ff69b4"][Math.floor(Math.random()*3)]));
+    }
+
+    // Typewriter popup
+    popupText.innerHTML = "";
+    let message = "I choose you today and every day after this...❤️";
+    popup.classList.add("show");
+    let i=0;
+    let typeInterval = setInterval(()=>{
+        popupText.innerHTML += message[i];
+        i++;
+        if(i>=message.length) clearInterval(typeInterval);
+    },50);
+
+    // Hide after 3 seconds
+    setTimeout(()=>{
+        popup.classList.remove("show");
+        popupText.innerHTML = "";
+    },3000);
+};
+
+// ==================== NO BUTTON ====================
+const noBtn = document.getElementById("noBtn");
+noBtn.onmouseover = function(){
+    const maxX = window.innerWidth - noBtn.offsetWidth;
+    const maxY = window.innerHeight - noBtn.offsetHeight;
+    this.style.position = "fixed";
+    this.style.left = Math.random()*maxX + "px";
+    this.style.top = Math.random()*maxY + "px";
+};
+
+// ==================== RESIZE ====================
 window.addEventListener("resize",()=>{
-    canvas.width=window.innerWidth;
-    canvas.height=window.innerHeight;
+    bgCanvas.width = window.innerWidth;
+    bgCanvas.height = window.innerHeight;
+    effectCanvas.width = window.innerWidth;
+    effectCanvas.height = window.innerHeight;
 });
 </script>
+
 </body>
 </html>
