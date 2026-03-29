@@ -205,22 +205,27 @@ function drawParticles(){
 // 💖 YES CLICK (FIXED)
 let clicked=false;
 
-yesBtn.onclick=()=>{
-    if(clicked) return; // ✅ prevent multiple clicks
-    clicked=true;
+// 💖 YES CLICK (multi-click safe)
+yesBtn.onclick = () => {
+    explode(); // create particles
 
-    explode();
-
+    // blur background
     document.getElementById("mainBox").classList.add("blur");
-    const overlay=document.getElementById("overlay");
-    overlay.style.display="flex";
 
-    typeWriter(document.getElementById("finalText"),"Saurabh ❤️ Sonali",80);
+    // show popup
+    const overlay = document.getElementById("overlay");
+    overlay.style.display = "flex";
 
-    setTimeout(()=>{
-        overlay.style.display="none";
+    // reset & type text
+    const finalEl = document.getElementById("finalText");
+    finalEl.innerHTML = ""; // ✅ reset so text doesn't repeat
+    typeWriter(finalEl, "Saurabh ❤️ Sonali", 80);
+
+    // hide after 3 seconds
+    setTimeout(() => {
+        overlay.style.display = "none";
         document.getElementById("mainBox").classList.remove("blur");
-    },3000);
+    }, 3000);
 };
 
 // ANIMATION
