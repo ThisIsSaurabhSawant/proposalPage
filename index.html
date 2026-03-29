@@ -11,7 +11,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     overflow: hidden;
 }
 
@@ -83,8 +83,8 @@ canvas {
 </head>
 <body>
 
-<div class="container" id="mainBox">
-    <h1 id="titleText">Hey Sonali...❤️</h1>
+<div class="container">
+    <h1>Hey Sonali...❤️</h1>
     <p>I want to grow old with you, laugh with you, and love you endlessly.</p>
     <p>Will you be mine? 💖</p>
 
@@ -96,8 +96,8 @@ canvas {
 
 <div id="overlay">
     <div class="popup">
-        <h2>💖 Wow! 💖</h2>
-        <p id="finalText">I choose you today and every day after this...❤️</p>
+        <h2 id="popupTitle">💖 Saurabh ❤️ Sonali 💖</h2>
+        <p>I choose you today and every day after this...❤️</p>
     </div>
 </div>
 
@@ -120,12 +120,13 @@ class Heart {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
         this.size = Math.random() * 20 + 10;
-        this.dx = (Math.random()-0.5) * 2;
-        this.dy = (Math.random()-0.5) * 2;
+        this.dx = (Math.random()-0.5) * 1.5; // slower for smooth
+        this.dy = (Math.random()-0.5) * 1.5;
+        this.color = "❤️";
     }
     draw() {
         ctx.font = this.size + "px Arial";
-        ctx.fillText("❤️", this.x, this.y);
+        ctx.fillText(this.color, this.x, this.y);
     }
     update() {
         if(isMobile){
@@ -185,21 +186,15 @@ noBtn.addEventListener("mouseover", ()=>{
 
 // YES BUTTON
 const yesBtn = document.getElementById("yesBtn");
-let clickCount = 0;
 yesBtn.onclick = ()=>{
     const overlay = document.getElementById("overlay");
-    const finalEl = document.getElementById("finalText");
-    const titleEl = document.getElementById("titleText");
-
-    clickCount++;
-    titleEl.innerHTML = "Saurabh ❤️ Sonali ".repeat(clickCount);
 
     // SHOW POPUP
     overlay.style.display = "flex";
     setTimeout(()=>{ overlay.style.display = "none"; }, 3000);
 
-    // CONFETTI BURST
-    for(let i=0;i<100;i++){
+    // CONFETTI HEART BURST
+    for(let i=0;i<50;i++){
         hearts.push(new Heart());
     }
 };
@@ -210,5 +205,6 @@ window.addEventListener("resize", ()=>{
     canvas.height = window.innerHeight;
 });
 </script>
+
 </body>
 </html>
