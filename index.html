@@ -20,7 +20,7 @@ body {
     padding: 40px;
     border-radius: 20px;
     text-align: center;
-    width: 320px;
+    width: 350px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     z-index: 10;
 }
@@ -84,7 +84,7 @@ canvas {
 <body>
 
 <div class="container" id="mainBox">
-    <h1>Hey Sonali...❤️</h1>
+    <h1 id="titleText">Hey Sonali...❤️</h1>
     <p>I want to grow old with you, laugh with you, and love you endlessly.</p>
     <p>Will you be mine? 💖</p>
 
@@ -138,7 +138,7 @@ class Heart {
             this.y += dy*0.002 + this.dy;
         }
 
-        // BOUNCE/CLAMP inside screen
+        // CLAMP inside screen
         if(this.x < 0){ this.x=0; this.dx *= -1; }
         if(this.x > canvas.width){ this.x=canvas.width; this.dx *= -1; }
         if(this.y < 0){ this.y=0; this.dy *= -1; }
@@ -160,8 +160,8 @@ if(!isMobile){
 // GYRO TRACK
 if(isMobile){
     window.addEventListener('deviceorientation', e=>{
-        gyroX = e.gamma/45; // tilt left-right
-        gyroY = e.beta/45;  // tilt up-down
+        gyroX = e.gamma/45;
+        gyroY = e.beta/45;
     });
 }
 
@@ -185,15 +185,23 @@ noBtn.addEventListener("mouseover", ()=>{
 
 // YES BUTTON
 const yesBtn = document.getElementById("yesBtn");
+let clickCount = 0;
 yesBtn.onclick = ()=>{
     const overlay = document.getElementById("overlay");
-    overlay.style.display = "flex";
-
-    // reset text so no repeating
     const finalEl = document.getElementById("finalText");
-    finalEl.innerHTML = "I choose you today and every day after this...❤️";
+    const titleEl = document.getElementById("titleText");
 
+    clickCount++;
+    titleEl.innerHTML = "Saurabh ❤️ Sonali ".repeat(clickCount);
+
+    // SHOW POPUP
+    overlay.style.display = "flex";
     setTimeout(()=>{ overlay.style.display = "none"; }, 3000);
+
+    // CONFETTI BURST
+    for(let i=0;i<100;i++){
+        hearts.push(new Heart());
+    }
 };
 
 // RESIZE
