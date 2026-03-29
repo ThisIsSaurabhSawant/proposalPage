@@ -105,18 +105,12 @@ canvas {
 </div>
 
 <canvas id="bgCanvas"></canvas>
-<canvas id="effectCanvas"></canvas>
 
 <script>
 const bgCanvas = document.getElementById("bgCanvas");
 const bgCtx = bgCanvas.getContext("2d");
 bgCanvas.width = window.innerWidth;
 bgCanvas.height = window.innerHeight;
-
-const effectCanvas = document.getElementById("effectCanvas");
-const effectCtx = effectCanvas.getContext("2d");
-effectCanvas.width = window.innerWidth;
-effectCanvas.height = window.innerHeight;
 
 let mouse = {x: bgCanvas.width/2, y: bgCanvas.height/2};
 let isMobile = /Mobi|Android/i.test(navigator.userAgent);
@@ -137,7 +131,7 @@ class Heart {
         this.x += dx * 0.002 + this.dx;
         this.y += dy * 0.002 + this.dy;
 
-        // stay inside screen
+        // keep inside screen
         if(this.x < 0) this.x = 0;
         if(this.x > bgCanvas.width) this.x = bgCanvas.width;
         if(this.y < 0) this.y = 0;
@@ -172,53 +166,11 @@ if(isMobile && window.DeviceOrientationEvent) {
     });
 }
 
-// ==================== PARTICLE EFFECT ====================
-class Particle {
-    constructor(x,y,char,color){
-        this.x = x; this.y = y;
-        this.vx = (Math.random()-0.5)*5;
-        this.vy = (Math.random()-0.5)*5;
-        this.alpha = 1;
-        this.char = char;
-        this.color = color;
-        this.size = Math.random()*15+10;
-    }
-    update(){
-        this.x += this.vx;
-        this.y += this.vy;
-        this.alpha -= 0.02;
-    }
-    draw(ctx){
-        ctx.globalAlpha = this.alpha;
-        ctx.font = this.size+"px Arial";
-        ctx.fillStyle = this.color;
-        ctx.fillText(this.char,this.x,this.y);
-        ctx.globalAlpha = 1;
-    }
-}
-
-let particles = [];
-function animateEffect() {
-    effectCtx.clearRect(0,0,effectCanvas.width,effectCanvas.height);
-    for(let i=particles.length-1;i>=0;i--){
-        particles[i].update();
-        particles[i].draw(effectCtx);
-        if(particles[i].alpha<=0) particles.splice(i,1);
-    }
-    requestAnimationFrame(animateEffect);
-}
-animateEffect();
-
 // ==================== YES BUTTON ====================
 const yesBtn = document.getElementById("yesBtn");
 const popup = document.getElementById("popup");
 
 yesBtn.onclick = () => {
-    let rect = yesBtn.getBoundingClientRect();
-    for(let i=0;i<30;i++){
-        particles.push(new Particle(rect.left+rect.width/2, rect.top+rect.height/2, "❤️", ["#ff6b81","#ff4757","#ff7f50"][Math.floor(Math.random()*3)]));
-        particles.push(new Particle(rect.left+rect.width/2, rect.top+rect.height/2, "🎉", ["#ffd700","#00ffea","#ff69b4"][Math.floor(Math.random()*3)]));
-    }
     popup.classList.add("show");
     setTimeout(()=>{popup.classList.remove("show");},3000);
 };
@@ -237,8 +189,6 @@ noBtn.onmouseover = function(){
 window.addEventListener("resize",()=>{
     bgCanvas.width = window.innerWidth;
     bgCanvas.height = window.innerHeight;
-    effectCanvas.width = window.innerWidth;
-    effectCanvas.height = window.innerHeight;
 });
 </script>
 
