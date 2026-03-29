@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Just One Question ❤️</title>
+
 <style>
 body {
     margin: 0;
@@ -20,7 +21,7 @@ body {
     padding: 40px;
     border-radius: 20px;
     text-align: center;
-    width: 350px;
+    width: 320px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     z-index: 10;
 }
@@ -81,6 +82,7 @@ canvas {
 }
 </style>
 </head>
+
 <body>
 
 <div class="container">
@@ -96,7 +98,7 @@ canvas {
 
 <div id="overlay">
     <div class="popup">
-        <h2 id="popupTitle">💖 Saurabh ❤️ Sonali 💖</h2>
+        <h2>💖 Saurabh ❤️ Sonali 💖</h2>
         <p>I choose you today and every day after this...❤️</p>
     </div>
 </div>
@@ -106,104 +108,115 @@ canvas {
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 let hearts = [];
-let mouse = { x: canvas.width/2, y: canvas.height/2 };
-let isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-let gyroX = 0, gyroY = 0;
+const MAX_HEARTS = 120; // limit hearts to prevent lag
+let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
 
-// HEART CLASS
+// Heart class
 class Heart {
     constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
         this.size = Math.random() * 20 + 10;
-        this.dx = (Math.random()-0.5) * 1.5; // slower for smooth
-        this.dy = (Math.random()-0.5) * 1.5;
-        this.color = "❤️";
+        this.dx = (Math.random() - 0.5) * 1.5;
+        this.dy = (Math.random() - 0.5) * 1.5;
     }
+
     draw() {
         ctx.font = this.size + "px Arial";
-        ctx.fillText(this.color, this.x, this.y);
+        ctx.fillText("❤️", this.x, this.y);
     }
-    update() {
-        if(isMobile){
-            this.x += this.dx + gyroX*5;
-            this.y += this.dy + gyroY*5;
-        } else {
-            let dx = mouse.x - this.x;
-            let dy = mouse.y - this.y;
-            this.x += dx*0.002 + this.dx;
-            this.y += dy*0.002 + this.dy;
-        }
 
-        // CLAMP inside screen
-        if(this.x < 0){ this.x=0; this.dx *= -1; }
-        if(this.x > canvas.width){ this.x=canvas.width; this.dx *= -1; }
-        if(this.y < 0){ this.y=0; this.dy *= -1; }
-        if(this.y > canvas.height){ this.y=canvas.height; this.dy *= -1; }
+    update() {
+        // Attraction to mouse/gyro
+        let dx = mouse.x - this.x;
+        let dy = mouse.y - this.y;
+
+        this.x += dx * 0.002 + this.dx;
+        this.y += dy * 0.002 + this.dy;
+
+        // Keep hearts inside screen
+        if (this.x <= 0) { this.x = 0; this.dx *= -1; }
+        if (this.x >= canvas.width) { this.x = canvas.width; this.dx *= -1; }
+        if (this.y <= 0) { this.y = 0; this.dy *= -1; }
+        if (this.y >= canvas.height) { this.y = canvas.height; this.dy *= -1; }
     }
 }
 
-// CREATE HEARTS
-for(let i=0;i<120;i++) hearts.push(new Heart());
+// Create initial hearts
+for (let i = 0; i < MAX_HEARTS; i++) hearts.push(new Heart());
 
-// MOUSE TRACK
+// Detect device type for gyro
+let isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
+// Mouse move for desktop
 if(!isMobile){
-    window.addEventListener("mousemove", e=>{
+    window.addEventListener("mousemove", (e)=>{
         mouse.x = e.clientX;
         mouse.y = e.clientY;
     });
 }
 
-// GYRO TRACK
-if(isMobile){
-    window.addEventListener('deviceorientation', e=>{
-        gyroX = e.gamma/45;
-        gyroY = e.beta/45;
-    });
+// Gyroscope for mobile
+if(isMobile && window.DeviceOrientationEvent){
+    window.addEventListener('deviceorientation', function(event){
+        let gamma = event.gamma || 0; // left-right tilt
+        let beta = event.beta || 0;   // front-back tilt
+
+        // Map tilt to canvas coordinates
+        mouse.x = canvas.width/2 + gamma * 8; // sensitivity adjust
+        mouse.y = canvas.height/2 + beta * 8;
+
+        // clamp to screen
+        mouse.x = Math.max(0, Math.min(canvas.width, mouse.x));
+        mouse.y = Math.max(0, Math.min(canvas.height, mouse.y));
+    }, true);
 }
 
-// ANIMATION LOOP
+// Animation loop
 function animate(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    hearts.forEach(h=>{h.update(); h.draw();});
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    hearts.forEach(h => { h.update(); h.draw(); });
     requestAnimationFrame(animate);
 }
 animate();
 
-// NO BUTTON PLAYFUL
+// NO button playful
 const noBtn = document.getElementById("noBtn");
-noBtn.addEventListener("mouseover", ()=>{
-    const maxX = window.innerWidth - noBtn.offsetWidth;
-    const maxY = window.innerHeight - noBtn.offsetHeight;
-    noBtn.style.position = "fixed";
-    noBtn.style.left = Math.random()*maxX + "px";
-    noBtn.style.top = Math.random()*maxY + "px";
-});
-
-// YES BUTTON
-const yesBtn = document.getElementById("yesBtn");
-yesBtn.onclick = ()=>{
-    const overlay = document.getElementById("overlay");
-
-    // SHOW POPUP
-    overlay.style.display = "flex";
-    setTimeout(()=>{ overlay.style.display = "none"; }, 3000);
-
-    // CONFETTI HEART BURST
-    for(let i=0;i<50;i++){
-        hearts.push(new Heart());
-    }
+noBtn.onmouseover = function(){
+    const maxX = window.innerWidth - this.offsetWidth;
+    const maxY = window.innerHeight - this.offsetHeight;
+    this.style.position = "fixed";
+    this.style.left = Math.random() * maxX + "px";
+    this.style.top = Math.random() * maxY + "px";
 };
 
-// RESIZE
+// YES button click with heart burst and popup
+const yesBtn = document.getElementById("yesBtn");
+yesBtn.onclick = () => {
+    const overlay = document.getElementById("overlay");
+    overlay.style.display = "flex";
+
+    setTimeout(() => { overlay.style.display = "none"; }, 3000);
+
+    // Heart burst effect
+    hearts.forEach(h => {
+        h.dx += (Math.random() - 0.5) * 2;
+        h.dy += (Math.random() - 0.5) * 2;
+        h.size += 2; // small pop effect
+    });
+};
+
+// Handle resize
 window.addEventListener("resize", ()=>{
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 });
+
 </script>
 
 </body>
