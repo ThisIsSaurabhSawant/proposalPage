@@ -40,7 +40,7 @@ body {
 .buttons {
     margin-top: 20px;
     display: flex;
-    justify-content: space-between; /* keep buttons on sides */
+    justify-content: space-between;
     position: relative;
 }
 
@@ -63,7 +63,7 @@ button {
 #noBtn {
     background: #dc3545;
     color: white;
-    position: relative;
+    position: absolute;
     z-index: 5;
 }
 
@@ -235,29 +235,28 @@ yesBtn.onclick = () => {
     },3000);
 };
 
-// ==================== NO BUTTON (PLAYFUL ESCAPE WITHIN BOUND) ====================
+// ==================== NO BUTTON (JUMP RANDOMLY) ====================
 const noBtn = document.getElementById("noBtn");
 
-function moveNoButton() {
+function jumpNoButton() {
     const btnWidth = noBtn.offsetWidth;
     const btnHeight = noBtn.offsetHeight;
-    const yesBtnWidth = yesBtn.offsetWidth;
 
-    // allowed range so it doesn't overlap yes button
-    const containerWidth = document.querySelector(".buttons").offsetWidth;
-    const minX = yesBtnWidth + 20; // minimum distance from yes button
-    const maxX = containerWidth - btnWidth;
-    const maxY = 0;
+    const maxX = window.innerWidth - btnWidth - 10; // 10px padding
+    const maxY = window.innerHeight - btnHeight - 10;
 
-    // move NO button slightly within its allowed range
-    const left = minX + Math.random()*(maxX - minX);
-    const top = maxY + Math.random()*10; // small vertical wiggle
+    const left = Math.random() * maxX;
+    const top = Math.random() * maxY;
 
-    noBtn.style.transform = `translate(${left}px, ${top}px) scale(${1 + Math.random()*0.1}) rotate(${Math.random()*10-5}deg)`;
+    noBtn.style.left = left + "px";
+    noBtn.style.top = top + "px";
+
+    // playful effect: small random rotation and scale
+    noBtn.style.transform = `rotate(${Math.random()*15-7.5}deg) scale(${1+Math.random()*0.1})`;
 }
 
-noBtn.addEventListener("mouseenter", moveNoButton);
-noBtn.addEventListener("touchstart", moveNoButton); // mobile
+// jump every 1.2 seconds
+setInterval(jumpNoButton, 1200);
 
 // ==================== RESIZE ====================
 window.addEventListener("resize",()=>{
