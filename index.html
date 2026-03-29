@@ -89,7 +89,7 @@ canvas {
 <body>
 
 <div class="container">
-    <h1>Hey Sonali...❤️</h1>
+    <h1>Hey Sonali.❤️</h1>
     <p>I want to grow old with you, laugh with you, and love you endlessly.</p>
     <p>Will you be mine? 💖</p>
 
@@ -115,8 +115,47 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-let hearts = [];
-let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+// 🎮 CONTROL SYSTEM
+let controlMode = "mouse";
+let control = { x: 0, y: 0 };
+
+// 📱 INIT CONTROLS
+function initControls() {
+    if (window.DeviceOrientationEvent) {
+        controlMode = "gyro";
+
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            document.body.addEventListener("click", () => {
+                DeviceOrientationEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            window.addEventListener("deviceorientation", handleOrientation);
+                        } else {
+                            enableMouse();
+                        }
+                    })
+                    .catch(enableMouse);
+            }, { once: true });
+        } else {
+            window.addEventListener("deviceorientation", handleOrientation);
+        }
+    } else {
+        enableMouse();
+    }
+}
+
+function enableMouse() {
+    controlMode = "mouse";
+    window.addEventListener("mousemove", (e) => {
+        control.x = (e.clientX - canvas.width / 2) / 50;
+        control.y = (e.clientY - canvas.height / 2) / 50;
+    });
+}
+
+function handleOrientation(event) {
+    control.x = event.gamma / 10;
+    control.y = event.beta / 10;
+}
 
 // 💖 HEART CLASS
 class Heart {
@@ -134,35 +173,30 @@ class Heart {
     }
 
     update() {
-        let dx = mouse.x - this.x;
-        let dy = mouse.y - this.y;
+        if (controlMode === "gyro") {
+            this.x += control.x + this.dx;
+            this.y += control.y + this.dy;
+        } else {
+            let dx = (control.x * 50 + canvas.width / 2) - this.x;
+            let dy = (control.y * 50 + canvas.height / 2) - this.y;
 
-        this.x += dx * 0.002 + this.dx;
-        this.y += dy * 0.002 + this.dy;
+            this.x += dx * 0.002 + this.dx;
+            this.y += dy * 0.002 + this.dy;
+        }
 
+        // bounce edges
         if (this.x <= 0 || this.x >= canvas.width) this.dx *= -1;
         if (this.y <= 0 || this.y >= canvas.height) this.dy *= -1;
     }
 }
 
-// 💖 CREATE MANY HEARTS
+// 💖 CREATE HEARTS
+let hearts = [];
 for (let i = 0; i < 120; i++) {
     hearts.push(new Heart());
 }
 
-// 🖱️ DESKTOP
-window.addEventListener("mousemove", (e) => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-});
-
-// 📱 MOBILE (ADDED)
-window.addEventListener("touchmove", (e) => {
-    mouse.x = e.touches[0].clientX;
-    mouse.y = e.touches[0].clientY;
-});
-
-// 🎬 ANIMATION LOOP
+// 🎬 ANIMATION
 function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -174,40 +208,36 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-animate();
-
-// 😈 MOVE FUNCTION (ADDED)
-function moveNo(btn) {
-    btn.style.position = "fixed";
-
-    const maxX = window.innerWidth - btn.offsetWidth;
-    const maxY = window.innerHeight - btn.offsetHeight;
-
-    btn.style.left = Math.random() * maxX + "px";
-    btn.style.top = Math.random() * maxY + "px";
-}
-
-// 🖱️ DESKTOP
+// 😈 NO BUTTON ESCAPE
 document.getElementById("noBtn").onmouseover = function () {
-    moveNo(this);
-};
+    this.style.position = "fixed";
 
-// 📱 MOBILE (ADDED)
-document.getElementById("noBtn").addEventListener("touchstart", function (e) {
-    e.preventDefault();
-    moveNo(this);
-});
+    const maxX = window.innerWidth - this.offsetWidth;
+    const maxY = window.innerHeight - this.offsetHeight;
+
+    this.style.left = Math.random() * maxX + "px";
+    this.style.top = Math.random() * maxY + "px";
+};
 
 // 💖 YES CLICK
 document.getElementById("yesBtn").onclick = () => {
     const overlay = document.getElementById("overlay");
-
     overlay.style.display = "flex";
 
     setTimeout(() => {
         overlay.style.display = "none";
     }, 3000);
 };
+
+// 🚀 START
+initControls();
+animate();
+
+// 📱 HANDLE RESIZE
+window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
 </script>
 
 </body>
