@@ -7,41 +7,29 @@
 body {
     margin: 0;
     height: 100vh;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
     background: linear-gradient(to right, #ff9a9e, #fad0c4);
-}
-
-#contentWrapper {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transition: filter 0.3s ease;
-}
-
-#contentWrapper.blur {
-    filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial;
+    overflow: hidden;
 }
 
 .container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10;
     background: white;
     padding: 40px;
     border-radius: 20px;
     text-align: center;
     width: 320px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    z-index: 10;
+    position: relative;
 }
 
 .buttons {
-    margin-top: 20px;
     display: flex;
     justify-content: space-between;
-    position: relative;
+    margin-top: 20px;
 }
 
 button {
@@ -50,34 +38,29 @@ button {
     border-radius: 10px;
     cursor: pointer;
     font-size: 16px;
-    transition: all 0.2s ease;
+    position: relative;
+    transition: transform 0.2s;
 }
 
 #yesBtn {
     background: #28a745;
     color: white;
-    z-index: 5;
-    position: relative;
 }
 
 #noBtn {
     background: #dc3545;
     color: white;
-    position: absolute;
-    z-index: 5;
 }
 
 #overlay {
     position: fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    display: flex;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(8px) brightness(1.1);
+    display: none;
     justify-content: center;
     align-items: center;
-    z-index: 1001;
-    pointer-events: none;
+    z-index: 1000;
 }
 
 .popup {
@@ -85,16 +68,13 @@ button {
     padding: 30px;
     border-radius: 20px;
     text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    opacity: 0;
-    transform: scale(0.5);
-    transition: all 0.3s ease;
-    pointer-events: auto;
+    animation: pop 0.3s ease;
+    max-width: 80%;
 }
 
-.popup.show {
-    opacity: 1;
-    transform: scale(1);
+@keyframes pop {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
 canvas {
@@ -103,165 +83,161 @@ canvas {
     left: 0;
     z-index: 1;
 }
+
+.typing span {
+    border-right: 2px solid #000;
+    padding-right: 2px;
+    white-space: nowrap;
+}
 </style>
 </head>
 <body>
 
-<div id="contentWrapper">
-    <canvas id="bgCanvas"></canvas>
-
-    <div class="container" id="mainContainer">
-        <h1 id="typeText"></h1>
-        <p id="typeSubText1"></p>
-        <p id="typeSubText2"></p>
-
-        <div class="buttons">
-            <button id="yesBtn">Yes ❤️</button>
-            <button id="noBtn">No 😅</button>
-        </div>
+<div class="container">
+    <h1 class="typing" id="typing"></h1>
+    <div class="buttons">
+        <button id="yesBtn">Yes ❤️</button>
+        <button id="noBtn">No 😅</button>
     </div>
 </div>
 
 <div id="overlay">
-    <div class="popup" id="popup">
+    <div class="popup">
         <h2>💖 Saurabh ❤️ Sonali 💖</h2>
-        <p>I choose you today and every day after this...❤️</p>
+        <p>I want to grow old with you, laugh with you, and love you endlessly.<br>Will you be mine? 💖</p>
     </div>
 </div>
 
+<canvas id="canvas"></canvas>
+
 <script>
-// ==================== TYPEWRITER ====================
-const messages = [
-    "Hey Sonali...❤️",
-    "I want to grow old with you, laugh with you, and love you endlessly.",
-    "Will you be mine? 💖"
-];
-
-const typeText = document.getElementById("typeText");
-const typeSubText1 = document.getElementById("typeSubText1");
-const typeSubText2 = document.getElementById("typeSubText2");
-
-function typeWriter(text, element, delay=50) {
-    return new Promise(resolve=>{
-        let i = 0;
-        function type() {
-            if(i < text.length) {
-                element.innerHTML += text.charAt(i);
-                i++;
-                setTimeout(type, delay);
-            } else resolve();
-        }
-        type();
-    });
+// ---------- TYPING EFFECT ----------
+const message = "Hey Sonali...❤️";
+const typingEl = document.getElementById("typing");
+let idx = 0;
+function typeText() {
+    if(idx < message.length){
+        typingEl.innerHTML += message[idx];
+        idx++;
+        setTimeout(typeText, 150);
+    }
 }
+typeText();
 
-async function runTyping() {
-    await typeWriter(messages[0], typeText);
-    await typeWriter(messages[1], typeSubText1);
-    await typeWriter(messages[2], typeSubText2);
-}
-runTyping();
+// ---------- CANVAS HEARTS ----------
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-// ==================== HEART BACKGROUND ====================
-const bgCanvas = document.getElementById("bgCanvas");
-const bgCtx = bgCanvas.getContext("2d");
-bgCanvas.width = window.innerWidth;
-bgCanvas.height = window.innerHeight;
-
-let mouse = {x: bgCanvas.width/2, y: bgCanvas.height/2};
+let hearts = [];
+let mouse = { x: canvas.width/2, y: canvas.height/2 };
 let isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
 class Heart {
-    constructor() { this.reset(); }
-    reset() {
-        this.x = Math.random() * bgCanvas.width;
-        this.y = Math.random() * bgCanvas.height;
-        this.size = Math.random() * 20 + 10;
-        this.dx = (Math.random()-0.5) * 0.8;
-        this.dy = (Math.random()-0.5) * 0.8;
+    constructor() {
+        this.x = Math.random()*canvas.width;
+        this.y = Math.random()*canvas.height;
+        this.size = Math.random()*15 + 10;
+        this.dx = (Math.random()-0.5)*2;
+        this.dy = (Math.random()-0.5)*2;
+    }
+    draw() {
+        ctx.font = this.size + "px Arial";
+        ctx.fillText("❤️", this.x, this.y);
     }
     update() {
         let dx = mouse.x - this.x;
         let dy = mouse.y - this.y;
-        this.x += dx * 0.002 + this.dx;
-        this.y += dy * 0.002 + this.dy;
+
+        if(!isMobile){
+            this.x += dx*0.002 + this.dx;
+            this.y += dy*0.002 + this.dy;
+        } else {
+            this.x += this.dx;
+            this.y += this.dy;
+        }
 
         // keep inside screen
         if(this.x < 0) this.x = 0;
-        if(this.x > bgCanvas.width) this.x = bgCanvas.width;
+        if(this.x > canvas.width) this.x = canvas.width;
         if(this.y < 0) this.y = 0;
-        if(this.y > bgCanvas.height) this.y = bgCanvas.height;
-    }
-    draw() {
-        bgCtx.font = this.size + "px Arial";
-        bgCtx.fillText("❤️", this.x, this.y);
+        if(this.y > canvas.height) this.y = canvas.height;
     }
 }
 
-let hearts = [];
-for(let i=0;i<80;i++) hearts.push(new Heart());
-
-function animateBG() {
-    bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
-    hearts.forEach(h=>{h.update(); h.draw();});
-    requestAnimationFrame(animateBG);
+for(let i=0;i<100;i++){
+    hearts.push(new Heart());
 }
-animateBG();
 
-// ==================== MOUSE/GYRO ====================
-if(isMobile && window.DeviceOrientationEvent) {
-    window.addEventListener("deviceorientation", e=>{
-        mouse.x = bgCanvas.width/2 + e.gamma*10;
-        mouse.y = bgCanvas.height/2 + e.beta*10;
+function animate() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    hearts.forEach(h=>{
+        h.update();
+        h.draw();
     });
-} else {
-    window.addEventListener("mousemove", e=>{
+    requestAnimationFrame(animate);
+}
+animate();
+
+window.addEventListener("mousemove",(e)=>{
+    if(!isMobile){
         mouse.x = e.clientX;
         mouse.y = e.clientY;
+    }
+});
+
+if(window.DeviceOrientationEvent){
+    window.addEventListener("deviceorientation", function(event){
+        if(isMobile){
+            mouse.x = canvas.width/2 + event.gamma*20;
+            mouse.y = canvas.height/2 + event.beta*20;
+        }
     });
 }
 
-// ==================== YES BUTTON ====================
+// ---------- YES BUTTON ----------
 const yesBtn = document.getElementById("yesBtn");
-const popup = document.getElementById("popup");
-const contentWrapper = document.getElementById("contentWrapper");
+const overlay = document.getElementById("overlay");
+yesBtn.addEventListener("click", ()=>{
+    overlay.style.display = "flex";
+    setTimeout(()=>{ overlay.style.display = "none"; }, 3000);
+});
 
-yesBtn.onclick = () => {
-    contentWrapper.classList.add("blur");
-    popup.classList.add("show");
-    setTimeout(()=>{
-        popup.classList.remove("show");
-        contentWrapper.classList.remove("blur");
-    },3000);
-};
-
-// ==================== NO BUTTON (JUMP RANDOMLY) ====================
+// ---------- NO BUTTON ----------
 const noBtn = document.getElementById("noBtn");
+let noMoved = false;
 
-function jumpNoButton() {
+noBtn.addEventListener("mouseenter", ()=>{
+    if(!noMoved){
+        noMoved = true;
+        setInterval(moveNoButton, 700); // jumps every 0.7 sec
+    }
+});
+
+function moveNoButton(){
     const btnWidth = noBtn.offsetWidth;
     const btnHeight = noBtn.offsetHeight;
 
-    const maxX = window.innerWidth - btnWidth - 10; // 10px padding
-    const maxY = window.innerHeight - btnHeight - 10;
+    const scale = 1 + Math.random()*0.1; 
+    const rotation = Math.random()*15 - 7.5;
+
+    const maxX = window.innerWidth - btnWidth*scale - 10;
+    const maxY = window.innerHeight - btnHeight*scale - 10;
 
     const left = Math.random() * maxX;
     const top = Math.random() * maxY;
 
+    noBtn.style.position = "fixed";
     noBtn.style.left = left + "px";
     noBtn.style.top = top + "px";
-
-    // playful effect: small random rotation and scale
-    noBtn.style.transform = `rotate(${Math.random()*15-7.5}deg) scale(${1+Math.random()*0.1})`;
+    noBtn.style.transform = `rotate(${rotation}deg) scale(${scale})`;
 }
 
-// jump every 1.2 seconds
-setInterval(jumpNoButton, 1200);
-
-// ==================== RESIZE ====================
-window.addEventListener("resize",()=>{
-    bgCanvas.width = window.innerWidth;
-    bgCanvas.height = window.innerHeight;
+// ---------- RESIZE ----------
+window.addEventListener("resize", ()=>{
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 });
 </script>
 </body>
