@@ -60,7 +60,7 @@ button {
 #noBtn {
     background: #dc3545;
     color: white;
-    position: relative;
+    position: absolute;
 }
 
 #overlay {
@@ -120,7 +120,7 @@ canvas {
 
 <div id="overlay">
     <div class="popup" id="popup">
-        <h2>💖 Saurabh ❤️ Sonali 💖</h2>
+        <h2>Saurabh ❤️ Sonali</h2>
         <p>I choose you today and every day after this...❤️</p>
     </div>
 </div>
@@ -231,16 +231,23 @@ yesBtn.onclick = () => {
     },3000);
 };
 
-// ==================== NO BUTTON ====================
+// ==================== NO BUTTON (PLAYFUL ESCAPE) ====================
 const noBtn = document.getElementById("noBtn");
-noBtn.onmouseover = function(){
-    const parentRect = noBtn.parentElement.getBoundingClientRect();
-    const maxX = parentRect.width - noBtn.offsetWidth;
-    const maxY = parentRect.height - noBtn.offsetHeight;
-    const left = Math.random()*maxX;
-    const top = Math.random()*maxY;
-    noBtn.style.transform = `translate(${left}px, ${top}px)`;
-};
+function moveNoButton() {
+    const btnWidth = noBtn.offsetWidth;
+    const btnHeight = noBtn.offsetHeight;
+    const maxX = window.innerWidth - btnWidth - 20; // margin
+    const maxY = window.innerHeight - btnHeight - 20;
+
+    const left = Math.random() * maxX;
+    const top = Math.random() * maxY;
+
+    // playful scale / wiggle effect
+    noBtn.style.transform = `translate(${left}px, ${top}px) scale(${1 + Math.random()*0.2}) rotate(${Math.random()*20-10}deg)`;
+}
+
+noBtn.addEventListener("mouseenter", moveNoButton);
+noBtn.addEventListener("touchstart", moveNoButton); // mobile touch support
 
 // ==================== RESIZE ====================
 window.addEventListener("resize",()=>{
@@ -249,4 +256,4 @@ window.addEventListener("resize",()=>{
 });
 </script>
 </body>
-</html>
+</html>s
