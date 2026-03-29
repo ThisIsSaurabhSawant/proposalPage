@@ -40,7 +40,8 @@ body {
 .buttons {
     margin-top: 20px;
     display: flex;
-    justify-content: space-around; /* buttons spaced evenly */
+    justify-content: space-between; /* keep buttons on sides */
+    position: relative;
 }
 
 button {
@@ -55,12 +56,15 @@ button {
 #yesBtn {
     background: #28a745;
     color: white;
+    z-index: 5;
+    position: relative;
 }
 
 #noBtn {
     background: #dc3545;
     color: white;
-    position: absolute;
+    position: relative;
+    z-index: 5;
 }
 
 #overlay {
@@ -120,7 +124,7 @@ canvas {
 
 <div id="overlay">
     <div class="popup" id="popup">
-        <h2>Saurabh ❤️ Sonali</h2>
+        <h2>💖 Saurabh ❤️ Sonali 💖</h2>
         <p>I choose you today and every day after this...❤️</p>
     </div>
 </div>
@@ -231,23 +235,29 @@ yesBtn.onclick = () => {
     },3000);
 };
 
-// ==================== NO BUTTON (PLAYFUL ESCAPE) ====================
+// ==================== NO BUTTON (PLAYFUL ESCAPE WITHIN BOUND) ====================
 const noBtn = document.getElementById("noBtn");
+
 function moveNoButton() {
     const btnWidth = noBtn.offsetWidth;
     const btnHeight = noBtn.offsetHeight;
-    const maxX = window.innerWidth - btnWidth - 20; // margin
-    const maxY = window.innerHeight - btnHeight - 20;
+    const yesBtnWidth = yesBtn.offsetWidth;
 
-    const left = Math.random() * maxX;
-    const top = Math.random() * maxY;
+    // allowed range so it doesn't overlap yes button
+    const containerWidth = document.querySelector(".buttons").offsetWidth;
+    const minX = yesBtnWidth + 20; // minimum distance from yes button
+    const maxX = containerWidth - btnWidth;
+    const maxY = 0;
 
-    // playful scale / wiggle effect
-    noBtn.style.transform = `translate(${left}px, ${top}px) scale(${1 + Math.random()*0.2}) rotate(${Math.random()*20-10}deg)`;
+    // move NO button slightly within its allowed range
+    const left = minX + Math.random()*(maxX - minX);
+    const top = maxY + Math.random()*10; // small vertical wiggle
+
+    noBtn.style.transform = `translate(${left}px, ${top}px) scale(${1 + Math.random()*0.1}) rotate(${Math.random()*10-5}deg)`;
 }
 
 noBtn.addEventListener("mouseenter", moveNoButton);
-noBtn.addEventListener("touchstart", moveNoButton); // mobile touch support
+noBtn.addEventListener("touchstart", moveNoButton); // mobile
 
 // ==================== RESIZE ====================
 window.addEventListener("resize",()=>{
@@ -256,4 +266,4 @@ window.addEventListener("resize",()=>{
 });
 </script>
 </body>
-</html>s
+</html>
