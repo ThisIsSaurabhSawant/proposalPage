@@ -10,24 +10,28 @@ body {
     overflow: hidden;
     font-family: Arial, sans-serif;
     background: linear-gradient(to right, #ff9a9e, #fad0c4);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+}
+
+#contentWrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: filter 0.3s ease;
+}
+
+#contentWrapper.blur {
+    filter: blur(8px);
 }
 
 .container {
+    position: relative;
+    z-index: 10;
     background: white;
     padding: 40px;
     border-radius: 20px;
     text-align: center;
     width: 320px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    z-index: 10;
-    transition: filter 0.3s ease;
-}
-
-.container.blur {
-    filter: blur(5px);
 }
 
 .buttons {
@@ -61,7 +65,7 @@ button {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 1001;
     pointer-events: none;
 }
 
@@ -70,7 +74,7 @@ button {
     padding: 30px;
     border-radius: 20px;
     text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     opacity: 0;
     transform: scale(0.5);
     transition: all 0.3s ease;
@@ -91,14 +95,18 @@ canvas {
 </head>
 <body>
 
-<div class="container" id="mainContainer">
-    <h1 id="typeText"></h1>
-    <p id="typeSubText1"></p>
-    <p id="typeSubText2"></p>
+<div id="contentWrapper">
+    <canvas id="bgCanvas"></canvas>
 
-    <div class="buttons">
-        <button id="yesBtn">Yes ❤️</button>
-        <button id="noBtn">No 😅</button>
+    <div class="container" id="mainContainer">
+        <h1 id="typeText"></h1>
+        <p id="typeSubText1"></p>
+        <p id="typeSubText2"></p>
+
+        <div class="buttons">
+            <button id="yesBtn">Yes ❤️</button>
+            <button id="noBtn">No 😅</button>
+        </div>
     </div>
 </div>
 
@@ -109,10 +117,8 @@ canvas {
     </div>
 </div>
 
-<canvas id="bgCanvas"></canvas>
-
 <script>
-// ==================== TYPEWRITER EFFECT ====================
+// ==================== TYPEWRITER ====================
 const messages = [
     "Hey Sonali...❤️",
     "I want to grow old with you, laugh with you, and love you endlessly.",
@@ -144,7 +150,7 @@ async function runTyping() {
 }
 runTyping();
 
-// ==================== BACKGROUND HEARTS ====================
+// ==================== HEART BACKGROUND ====================
 const bgCanvas = document.getElementById("bgCanvas");
 const bgCtx = bgCanvas.getContext("2d");
 bgCanvas.width = window.innerWidth;
@@ -206,14 +212,14 @@ if(isMobile && window.DeviceOrientationEvent) {
 // ==================== YES BUTTON ====================
 const yesBtn = document.getElementById("yesBtn");
 const popup = document.getElementById("popup");
-const mainContainer = document.getElementById("mainContainer");
+const contentWrapper = document.getElementById("contentWrapper");
 
 yesBtn.onclick = () => {
-    mainContainer.classList.add("blur");
+    contentWrapper.classList.add("blur");
     popup.classList.add("show");
     setTimeout(()=>{
         popup.classList.remove("show");
-        mainContainer.classList.remove("blur");
+        contentWrapper.classList.remove("blur");
     },3000);
 };
 
