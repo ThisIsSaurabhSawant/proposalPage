@@ -23,6 +23,11 @@ body {
     width: 320px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     z-index: 10;
+    transition: filter 0.3s ease;
+}
+
+.container.blur {
+    filter: blur(5px);
 }
 
 .buttons {
@@ -86,10 +91,10 @@ canvas {
 </head>
 <body>
 
-<div class="container">
-    <h1>Hey Sonali...❤️</h1>
-    <p>I want to grow old with you, laugh with you, and love you endlessly.</p>
-    <p>Will you be mine? 💖</p>
+<div class="container" id="mainContainer">
+    <h1 id="typeText"></h1>
+    <p id="typeSubText1"></p>
+    <p id="typeSubText2"></p>
 
     <div class="buttons">
         <button id="yesBtn">Yes ❤️</button>
@@ -99,7 +104,7 @@ canvas {
 
 <div id="overlay">
     <div class="popup" id="popup">
-        <h2>💖 Saurabh ❤️ Sonali 💖</h2>
+        <h2>Saurabh ❤️ Sonali</h2>
         <p>I choose you today and every day after this...❤️</p>
     </div>
 </div>
@@ -107,6 +112,39 @@ canvas {
 <canvas id="bgCanvas"></canvas>
 
 <script>
+// ==================== TYPEWRITER EFFECT ====================
+const messages = [
+    "Hey Sonali...❤️",
+    "I want to grow old with you, laugh with you, and love you endlessly.",
+    "Will you be mine? 💖"
+];
+
+const typeText = document.getElementById("typeText");
+const typeSubText1 = document.getElementById("typeSubText1");
+const typeSubText2 = document.getElementById("typeSubText2");
+
+function typeWriter(text, element, delay=50) {
+    return new Promise(resolve=>{
+        let i = 0;
+        function type() {
+            if(i < text.length) {
+                element.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(type, delay);
+            } else resolve();
+        }
+        type();
+    });
+}
+
+async function runTyping() {
+    await typeWriter(messages[0], typeText);
+    await typeWriter(messages[1], typeSubText1);
+    await typeWriter(messages[2], typeSubText2);
+}
+runTyping();
+
+// ==================== BACKGROUND HEARTS ====================
 const bgCanvas = document.getElementById("bgCanvas");
 const bgCtx = bgCanvas.getContext("2d");
 bgCanvas.width = window.innerWidth;
@@ -115,7 +153,6 @@ bgCanvas.height = window.innerHeight;
 let mouse = {x: bgCanvas.width/2, y: bgCanvas.height/2};
 let isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
-// ==================== BACKGROUND HEARTS ====================
 class Heart {
     constructor() { this.reset(); }
     reset() {
@@ -169,10 +206,15 @@ if(isMobile && window.DeviceOrientationEvent) {
 // ==================== YES BUTTON ====================
 const yesBtn = document.getElementById("yesBtn");
 const popup = document.getElementById("popup");
+const mainContainer = document.getElementById("mainContainer");
 
 yesBtn.onclick = () => {
+    mainContainer.classList.add("blur");
     popup.classList.add("show");
-    setTimeout(()=>{popup.classList.remove("show");},3000);
+    setTimeout(()=>{
+        popup.classList.remove("show");
+        mainContainer.classList.remove("blur");
+    },3000);
 };
 
 // ==================== NO BUTTON ====================
@@ -191,6 +233,5 @@ window.addEventListener("resize",()=>{
     bgCanvas.height = window.innerHeight;
 });
 </script>
-
 </body>
 </html>
