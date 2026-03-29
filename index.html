@@ -89,7 +89,7 @@ canvas {
 <body>
 
 <div class="container">
-    <h1>Hey Sonali.❤️</h1>
+    <h1>Hey Sonali...❤️</h1>
     <p>I want to grow old with you, laugh with you, and love you endlessly.</p>
     <p>Will you be mine? 💖</p>
 
@@ -160,9 +160,9 @@ function handleOrientation(event) {
 // 💖 HEART CLASS
 class Heart {
     constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
         this.size = Math.random() * 20 + 10;
+        this.x = Math.random() * (canvas.width - this.size * 2) + this.size;
+        this.y = Math.random() * (canvas.height - this.size * 2) + this.size;
         this.dx = (Math.random() - 0.5) * 2;
         this.dy = (Math.random() - 0.5) * 2;
     }
@@ -184,9 +184,28 @@ class Heart {
             this.y += dy * 0.002 + this.dy;
         }
 
-        // bounce edges
-        if (this.x <= 0 || this.x >= canvas.width) this.dx *= -1;
-        if (this.y <= 0 || this.y >= canvas.height) this.dy *= -1;
+        // ✅ BOUNDARY WITH PADDING
+        const padding = this.size;
+
+        if (this.x < padding) {
+            this.x = padding;
+            this.dx *= -1;
+        }
+
+        if (this.x > canvas.width - padding) {
+            this.x = canvas.width - padding;
+            this.dx *= -1;
+        }
+
+        if (this.y < padding) {
+            this.y = padding;
+            this.dy *= -1;
+        }
+
+        if (this.y > canvas.height - padding) {
+            this.y = canvas.height - padding;
+            this.dy *= -1;
+        }
     }
 }
 
