@@ -16,7 +16,6 @@ body {
     overflow: hidden;
 }
 
-/* CENTER BOX */
 .container {
     background: white;
     padding: 40px;
@@ -33,7 +32,6 @@ body {
     transform: scale(0.95);
 }
 
-/* BUTTONS PERFECT ALIGN */
 .buttons {
     display: flex;
     justify-content: center;
@@ -47,7 +45,6 @@ button {
     border-radius: 10px;
     cursor: pointer;
     font-size: 16px;
-    transition: 0.2s;
 }
 
 #yesBtn {
@@ -58,7 +55,13 @@ button {
 #noBtn {
     background: #dc3545;
     color: white;
-    position: relative;
+}
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
 }
 
 /* POPUP */
@@ -78,19 +81,6 @@ button {
     padding: 40px;
     border-radius: 20px;
     text-align: center;
-    animation: pop 0.3s ease;
-}
-
-@keyframes pop {
-    from { transform: scale(0.5); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1;
 }
 </style>
 </head>
@@ -117,11 +107,10 @@ canvas {
 
 <canvas id="canvas"></canvas>
 
-<audio id="bgMusic" src="https://www.bensound.com/bensound-music/bensound-romantic.mp3"></audio>
-
 <script>
 // TYPEWRITER
 function typeWriter(el, text, speed=40){
+    el.innerHTML = ""; // ✅ reset fix
     let i=0;
     function t(){
         if(i<text.length){
@@ -136,27 +125,16 @@ typeWriter(title,"Hey Sonali...❤️");
 setTimeout(()=>typeWriter(line1,"I want to grow old with you..."),800);
 setTimeout(()=>typeWriter(line2,"Will you be mine? 💖"),2000);
 
-// 😈 PLAYFUL NO BUTTON
+// 😈 NO BUTTON
 let level=0;
-const noBtn=document.getElementById("noBtn");
-
 noBtn.onmouseover=()=>{
     level++;
-
-    if(level===2) noBtn.innerText="Are you sure? 🤔";
-    if(level===3) noBtn.innerText="Think again 😏";
-    if(level===4) noBtn.innerText="Last chance 😜";
-    if(level>=5) noBtn.style.transform="scale(0.6)";
-
-    const maxX=window.innerWidth-noBtn.offsetWidth;
-    const maxY=window.innerHeight-noBtn.offsetHeight;
-
     noBtn.style.position="fixed";
-    noBtn.style.left=Math.random()*maxX+"px";
-    noBtn.style.top=Math.random()*maxY+"px";
+    noBtn.style.left=Math.random()*(innerWidth-100)+"px";
+    noBtn.style.top=Math.random()*(innerHeight-50)+"px";
 };
 
-// 💖 CANVAS + GYRO
+// 💖 CANVAS
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
 
@@ -165,15 +143,6 @@ canvas.height=innerHeight;
 
 let control={x:0,y:0};
 
-// GYRO
-if(window.DeviceOrientationEvent){
-    window.addEventListener("deviceorientation",(e)=>{
-        control.x=e.gamma/20;
-        control.y=e.beta/20;
-    });
-}
-
-// MOUSE fallback
 window.addEventListener("mousemove",(e)=>{
     control.x=(e.clientX-canvas.width/2)/100;
     control.y=(e.clientY-canvas.height/2)/100;
@@ -183,30 +152,33 @@ window.addEventListener("mousemove",(e)=>{
 let hearts=[];
 for(let i=0;i<100;i++){
     hearts.push({
+        size:Math.random()*20+10,
         x:Math.random()*canvas.width,
         y:Math.random()*canvas.height,
         dx:(Math.random()-0.5)*2,
-        dy:(Math.random()-0.5)*2,
-        size:Math.random()*20+10
+        dy:(Math.random()-0.5)*2
     });
 }
 
 function drawHearts(){
     hearts.forEach(h=>{
-        ctx.font=h.size+"px Arial";
-        ctx.fillText("❤️",h.x,h.y);
-
         h.x+=h.dx+control.x;
         h.y+=h.dy+control.y;
 
         const p=h.size;
 
-        if(h.x<p||h.x>canvas.width-p) h.dx*=-1;
-        if(h.y<p||h.y>canvas.height-p) h.dy*=-1;
+        // ✅ HARD CLAMP (fix)
+        if(h.x<p){ h.x=p; h.dx*=-1; }
+        if(h.x>canvas.width-p){ h.x=canvas.width-p; h.dx*=-1; }
+        if(h.y<p){ h.y=p; h.dy*=-1; }
+        if(h.y>canvas.height-p){ h.y=canvas.height-p; h.dy*=-1; }
+
+        ctx.font=h.size+"px Arial";
+        ctx.fillText("❤️",h.x,h.y);
     });
 }
 
-// 🎉 PARTICLES
+// PARTICLES
 let particles=[];
 function explode(){
     for(let i=0;i<150;i++){
@@ -230,27 +202,21 @@ function drawParticles(){
     });
 }
 
-// 💖 YES CLICK
+// 💖 YES CLICK (FIXED)
+let clicked=false;
+
 yesBtn.onclick=()=>{
+    if(clicked) return; // ✅ prevent multiple clicks
+    clicked=true;
+
     explode();
 
-    // vibration
-    if(navigator.vibrate) navigator.vibrate([200,100,200]);
-
-    // music
-    const music=document.getElementById("bgMusic");
-    music.volume=0.3;
-    music.play().catch(()=>{});
-
-    // blur + popup
     document.getElementById("mainBox").classList.add("blur");
     const overlay=document.getElementById("overlay");
     overlay.style.display="flex";
 
-    // name reveal
     typeWriter(document.getElementById("finalText"),"Saurabh ❤️ Sonali",80);
 
-    // auto close
     setTimeout(()=>{
         overlay.style.display="none";
         document.getElementById("mainBox").classList.remove("blur");
