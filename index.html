@@ -40,7 +40,7 @@ body {
 .buttons {
     margin-top: 20px;
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around; /* buttons spaced evenly */
 }
 
 button {
@@ -49,6 +49,7 @@ button {
     border-radius: 10px;
     cursor: pointer;
     font-size: 16px;
+    transition: all 0.2s ease;
 }
 
 #yesBtn {
@@ -59,12 +60,15 @@ button {
 #noBtn {
     background: #dc3545;
     color: white;
+    position: relative;
 }
 
 #overlay {
     position: fixed;
-    width: 100%;
-    height: 100%;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -116,7 +120,7 @@ canvas {
 
 <div id="overlay">
     <div class="popup" id="popup">
-        <h2>Saurabh ❤️ Sonali</h2>
+        <h2>💖 Saurabh ❤️ Sonali 💖</h2>
         <p>I choose you today and every day after this...❤️</p>
     </div>
 </div>
@@ -169,8 +173,8 @@ class Heart {
         this.x = Math.random() * bgCanvas.width;
         this.y = Math.random() * bgCanvas.height;
         this.size = Math.random() * 20 + 10;
-        this.dx = (Math.random()-0.5) * 1.2;
-        this.dy = (Math.random()-0.5) * 1.2;
+        this.dx = (Math.random()-0.5) * 0.8;
+        this.dy = (Math.random()-0.5) * 0.8;
     }
     update() {
         let dx = mouse.x - this.x;
@@ -191,7 +195,7 @@ class Heart {
 }
 
 let hearts = [];
-for(let i=0;i<100;i++) hearts.push(new Heart());
+for(let i=0;i<80;i++) hearts.push(new Heart());
 
 function animateBG() {
     bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
@@ -230,11 +234,12 @@ yesBtn.onclick = () => {
 // ==================== NO BUTTON ====================
 const noBtn = document.getElementById("noBtn");
 noBtn.onmouseover = function(){
-    const maxX = window.innerWidth - noBtn.offsetWidth;
-    const maxY = window.innerHeight - noBtn.offsetHeight;
-    this.style.position = "fixed";
-    this.style.left = Math.random()*maxX + "px";
-    this.style.top = Math.random()*maxY + "px";
+    const parentRect = noBtn.parentElement.getBoundingClientRect();
+    const maxX = parentRect.width - noBtn.offsetWidth;
+    const maxY = parentRect.height - noBtn.offsetHeight;
+    const left = Math.random()*maxX;
+    const top = Math.random()*maxY;
+    noBtn.style.transform = `translate(${left}px, ${top}px)`;
 };
 
 // ==================== RESIZE ====================
