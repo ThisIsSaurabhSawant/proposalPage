@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Just One Question ❤️</title>
-
 <style>
 body {
     margin: 0;
@@ -40,15 +39,8 @@ button {
     font-size: 16px;
 }
 
-#yesBtn {
-    background: #28a745;
-    color: white;
-}
-
-#noBtn {
-    background: #dc3545;
-    color: white;
-}
+#yesBtn { background: #28a745; color: white; }
+#noBtn { background: #dc3545; color: white; }
 
 #overlay {
     position: fixed;
@@ -65,24 +57,15 @@ button {
     background: white;
     padding: 30px;
     border-radius: 20px;
-    animation: pop 0.3s ease;
     text-align: center;
+    animation: pop 0.3s ease;
 }
 
-@keyframes pop {
-    from { transform: scale(0.5); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
+@keyframes pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1;
-}
+canvas { position: fixed; top: 0; left: 0; z-index: 1; }
 </style>
 </head>
-
 <body>
 
 <div class="container">
@@ -98,8 +81,8 @@ canvas {
 
 <div id="overlay">
     <div class="popup">
-        <h2>💖 Saurabh ❤️ Sonali 💖</h2>
-        <p>I choose you today and every day after this...❤️</p>
+        <h2 id="popupTitle">💖 Saurabh ❤️ Sonali 💖</h2>
+        <p id="popupText"></p>
     </div>
 </div>
 
@@ -108,79 +91,56 @@ canvas {
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 let hearts = [];
-const MAX_HEARTS = 120; // limit hearts to prevent lag
+const MAX_HEARTS = 120;
 let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+let isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
 // Heart class
 class Heart {
-    constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 20 + 10;
-        this.dx = (Math.random() - 0.5) * 1.5;
-        this.dy = (Math.random() - 0.5) * 1.5;
+    constructor(x, y, size, dx, dy) {
+        this.x = x || Math.random() * canvas.width;
+        this.y = y || Math.random() * canvas.height;
+        this.size = size || Math.random() * 20 + 10;
+        this.dx = dx || (Math.random() - 0.5) * 1.5;
+        this.dy = dy || (Math.random() - 0.5) * 1.5;
     }
-
-    draw() {
-        ctx.font = this.size + "px Arial";
-        ctx.fillText("❤️", this.x, this.y);
-    }
-
+    draw() { ctx.font = this.size + "px Arial"; ctx.fillText("❤️", this.x, this.y); }
     update() {
-        // Attraction to mouse/gyro
-        let dx = mouse.x - this.x;
-        let dy = mouse.y - this.y;
-
+        let dx = mouse.x - this.x, dy = mouse.y - this.y;
         this.x += dx * 0.002 + this.dx;
         this.y += dy * 0.002 + this.dy;
-
-        // Keep hearts inside screen
-        if (this.x <= 0) { this.x = 0; this.dx *= -1; }
-        if (this.x >= canvas.width) { this.x = canvas.width; this.dx *= -1; }
-        if (this.y <= 0) { this.y = 0; this.dy *= -1; }
-        if (this.y >= canvas.height) { this.y = canvas.height; this.dy *= -1; }
+        if(this.x <=0){ this.x=0; this.dx*=-1; }
+        if(this.x>=canvas.width){ this.x=canvas.width; this.dx*=-1; }
+        if(this.y<=0){ this.y=0; this.dy*=-1; }
+        if(this.y>=canvas.height){ this.y=canvas.height; this.dy*=-1; }
     }
 }
 
 // Create initial hearts
-for (let i = 0; i < MAX_HEARTS; i++) hearts.push(new Heart());
+for(let i=0;i<MAX_HEARTS;i++) hearts.push(new Heart());
 
-// Detect device type for gyro
-let isMobile = /Mobi|Android/i.test(navigator.userAgent);
-
-// Mouse move for desktop
+// Mouse/gyro tracking
 if(!isMobile){
-    window.addEventListener("mousemove", (e)=>{
-        mouse.x = e.clientX;
-        mouse.y = e.clientY;
+    window.addEventListener("mousemove",(e)=>{mouse.x=e.clientX;mouse.y=e.clientY;});
+}else if(window.DeviceOrientationEvent){
+    window.addEventListener('deviceorientation', function(e){
+        let gamma=e.gamma||0, beta=e.beta||0;
+        mouse.x = canvas.width/2 + gamma*8;
+        mouse.y = canvas.height/2 + beta*8;
+        mouse.x=Math.max(0,Math.min(canvas.width,mouse.x));
+        mouse.y=Math.max(0,Math.min(canvas.height,mouse.y));
     });
-}
-
-// Gyroscope for mobile
-if(isMobile && window.DeviceOrientationEvent){
-    window.addEventListener('deviceorientation', function(event){
-        let gamma = event.gamma || 0; // left-right tilt
-        let beta = event.beta || 0;   // front-back tilt
-
-        // Map tilt to canvas coordinates
-        mouse.x = canvas.width/2 + gamma * 8; // sensitivity adjust
-        mouse.y = canvas.height/2 + beta * 8;
-
-        // clamp to screen
-        mouse.x = Math.max(0, Math.min(canvas.width, mouse.x));
-        mouse.y = Math.max(0, Math.min(canvas.height, mouse.y));
-    }, true);
 }
 
 // Animation loop
 function animate(){
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    hearts.forEach(h => { h.update(); h.draw(); });
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    hearts.forEach(h=>{ h.update(); h.draw(); });
+    confetti.forEach(c=>{c.update();c.draw();});
     requestAnimationFrame(animate);
 }
 animate();
@@ -188,36 +148,83 @@ animate();
 // NO button playful
 const noBtn = document.getElementById("noBtn");
 noBtn.onmouseover = function(){
-    const maxX = window.innerWidth - this.offsetWidth;
-    const maxY = window.innerHeight - this.offsetHeight;
-    this.style.position = "fixed";
-    this.style.left = Math.random() * maxX + "px";
-    this.style.top = Math.random() * maxY + "px";
+    const maxX=window.innerWidth-this.offsetWidth;
+    const maxY=window.innerHeight-this.offsetHeight;
+    this.style.position="fixed";
+    this.style.left=Math.random()*maxX+"px";
+    this.style.top=Math.random()*maxY+"px";
 };
 
-// YES button click with heart burst and popup
-const yesBtn = document.getElementById("yesBtn");
-yesBtn.onclick = () => {
-    const overlay = document.getElementById("overlay");
-    overlay.style.display = "flex";
+// YES button click with heart explosion and typewriter + confetti
+const yesBtn=document.getElementById("yesBtn");
+const overlay=document.getElementById("overlay");
+const popupText=document.getElementById("popupText");
 
-    setTimeout(() => { overlay.style.display = "none"; }, 3000);
-
-    // Heart burst effect
-    hearts.forEach(h => {
-        h.dx += (Math.random() - 0.5) * 2;
-        h.dy += (Math.random() - 0.5) * 2;
-        h.size += 2; // small pop effect
-    });
+yesBtn.onclick = ()=>{
+    overlay.style.display="flex";
+    typeWriter("I choose you today and every day after this...❤️", popupText, 50);
+    burstHearts(mouse.x, mouse.y);
+    startConfetti();
+    setTimeout(()=>{
+        overlay.style.display="none";
+        popupText.textContent="";
+        stopConfetti();
+    },3000);
 };
 
-// Handle resize
-window.addEventListener("resize", ()=>{
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+// Typewriter function
+function typeWriter(text, element, speed){
+    element.textContent="";
+    let i=0;
+    let interval = setInterval(()=>{
+        if(i<text.length){
+            element.textContent+=text.charAt(i);
+            i++;
+        }else{
+            clearInterval(interval);
+        }
+    }, speed);
+}
+
+// Heart burst effect
+function burstHearts(x,y){
+    for(let i=0;i<20;i++){
+        if(hearts.length>=MAX_HEARTS) break;
+        hearts.push(new Heart(x,y,Math.random()*20+10,(Math.random()-0.5)*4,(Math.random()-0.5)*4));
+    }
+}
+
+// Confetti
+let confetti=[];
+function ConfettiPiece(){
+    this.x=Math.random()*canvas.width;
+    this.y=Math.random()*canvas.height;
+    this.size=Math.random()*5+5;
+    this.color="hsl("+Math.random()*360+",100%,70%)";
+    this.dx=(Math.random()-0.5)*2;
+    this.dy=Math.random()*3+2;
+}
+ConfettiPiece.prototype.draw=function(){
+    ctx.fillStyle=this.color;
+    ctx.fillRect(this.x,this.y,this.size,this.size);
+}
+ConfettiPiece.prototype.update=function(){
+    this.x+=this.dx;
+    this.y+=this.dy;
+    if(this.y>canvas.height){ this.y=0; this.x=Math.random()*canvas.width; }
+}
+
+function startConfetti(){
+    confetti=[];
+    for(let i=0;i<100;i++) confetti.push(new ConfettiPiece());
+}
+function stopConfetti(){ confetti=[]; }
+
+// Resize handling
+window.addEventListener("resize",()=>{
+    canvas.width=window.innerWidth;
+    canvas.height=window.innerHeight;
 });
-
 </script>
-
 </body>
 </html>
