@@ -16,6 +16,7 @@ body {
     overflow: hidden;
 }
 
+/* CENTER BOX */
 .container {
     background: white;
     padding: 40px;
@@ -32,40 +33,32 @@ body {
     transform: scale(0.95);
 }
 
+/* BUTTONS PERFECT ALIGN */
 .buttons {
-    position: relative;
-    height: 80px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
 }
 
 button {
-    padding: 10px 20px;
+    padding: 10px 22px;
     border: none;
     border-radius: 10px;
     cursor: pointer;
     font-size: 16px;
-    position: absolute;
     transition: 0.2s;
 }
 
 #yesBtn {
     background: #28a745;
     color: white;
-    left: 20px;
-    top: 20px;
 }
 
 #noBtn {
     background: #dc3545;
     color: white;
-    left: 180px;
-    top: 20px;
-}
-
-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1;
+    position: relative;
 }
 
 /* POPUP */
@@ -92,6 +85,13 @@ canvas {
     from { transform: scale(0.5); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
 }
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
 </style>
 </head>
 
@@ -110,15 +110,17 @@ canvas {
 
 <div id="overlay">
     <div class="popup">
-        <h2>💖 Wow! 💖</h2>
+        <h2 id="finalText"></h2>
         <p>I choose you today and every day after this...❤️</p>
     </div>
 </div>
 
 <canvas id="canvas"></canvas>
 
+<audio id="bgMusic" src="https://www.bensound.com/bensound-music/bensound-romantic.mp3"></audio>
+
 <script>
-// ✍️ TYPEWRITER
+// TYPEWRITER
 function typeWriter(el, text, speed=40){
     let i=0;
     function t(){
@@ -136,36 +138,46 @@ setTimeout(()=>typeWriter(line2,"Will you be mine? 💖"),2000);
 
 // 😈 PLAYFUL NO BUTTON
 let level=0;
-const messages=[
-    "No 😅",
-    "Are you sure? 🤔",
-    "Think again 😏",
-    "Last chance 😜",
-    "You can't escape 😆"
-];
+const noBtn=document.getElementById("noBtn");
 
 noBtn.onmouseover=()=>{
     level++;
+
+    if(level===2) noBtn.innerText="Are you sure? 🤔";
+    if(level===3) noBtn.innerText="Think again 😏";
+    if(level===4) noBtn.innerText="Last chance 😜";
+    if(level>=5) noBtn.style.transform="scale(0.6)";
+
+    const maxX=window.innerWidth-noBtn.offsetWidth;
+    const maxY=window.innerHeight-noBtn.offsetHeight;
+
     noBtn.style.position="fixed";
-
-    if(level < messages.length){
-        noBtn.innerText = messages[level];
-    } else {
-        noBtn.style.transform="scale(0.6)";
-    }
-
-    const maxX = window.innerWidth - noBtn.offsetWidth;
-    const maxY = window.innerHeight - noBtn.offsetHeight;
-
-    noBtn.style.left = Math.random()*maxX+"px";
-    noBtn.style.top = Math.random()*maxY+"px";
+    noBtn.style.left=Math.random()*maxX+"px";
+    noBtn.style.top=Math.random()*maxY+"px";
 };
 
-// 💖 CANVAS
+// 💖 CANVAS + GYRO
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
+
 canvas.width=innerWidth;
 canvas.height=innerHeight;
+
+let control={x:0,y:0};
+
+// GYRO
+if(window.DeviceOrientationEvent){
+    window.addEventListener("deviceorientation",(e)=>{
+        control.x=e.gamma/20;
+        control.y=e.beta/20;
+    });
+}
+
+// MOUSE fallback
+window.addEventListener("mousemove",(e)=>{
+    control.x=(e.clientX-canvas.width/2)/100;
+    control.y=(e.clientY-canvas.height/2)/100;
+});
 
 // HEARTS
 let hearts=[];
@@ -184,15 +196,17 @@ function drawHearts(){
         ctx.font=h.size+"px Arial";
         ctx.fillText("❤️",h.x,h.y);
 
-        h.x+=h.dx;
-        h.y+=h.dy;
+        h.x+=h.dx+control.x;
+        h.y+=h.dy+control.y;
 
-        if(h.x<0||h.x>canvas.width)h.dx*=-1;
-        if(h.y<0||h.y>canvas.height)h.dy*=-1;
+        const p=h.size;
+
+        if(h.x<p||h.x>canvas.width-p) h.dx*=-1;
+        if(h.y<p||h.y>canvas.height-p) h.dy*=-1;
     });
 }
 
-// PARTICLES
+// 🎉 PARTICLES
 let particles=[];
 function explode(){
     for(let i=0;i<150;i++){
@@ -212,7 +226,7 @@ function drawParticles(){
         p.x+=p.dx;
         p.y+=p.dy;
         p.life--;
-        if(p.life<=0)particles.splice(i,1);
+        if(p.life<=0) particles.splice(i,1);
     });
 }
 
@@ -220,13 +234,23 @@ function drawParticles(){
 yesBtn.onclick=()=>{
     explode();
 
+    // vibration
     if(navigator.vibrate) navigator.vibrate([200,100,200]);
 
+    // music
+    const music=document.getElementById("bgMusic");
+    music.volume=0.3;
+    music.play().catch(()=>{});
+
+    // blur + popup
     document.getElementById("mainBox").classList.add("blur");
-    const overlay = document.getElementById("overlay");
+    const overlay=document.getElementById("overlay");
     overlay.style.display="flex";
 
-    // ⏱ AUTO CLOSE AFTER 3 SEC
+    // name reveal
+    typeWriter(document.getElementById("finalText"),"Saurabh ❤️ Sonali",80);
+
+    // auto close
     setTimeout(()=>{
         overlay.style.display="none";
         document.getElementById("mainBox").classList.remove("blur");
@@ -242,6 +266,7 @@ function animate(){
 }
 animate();
 
+// RESIZE
 onresize=()=>{
     canvas.width=innerWidth;
     canvas.height=innerHeight;
