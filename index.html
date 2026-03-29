@@ -2,74 +2,79 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Just One Question ❤️</title>
 
     <style>
+        :root {
+            --primary-pink: #ff4d6d;
+            --soft-pink: #ffccd5;
+            --bg-gradient: linear-gradient(135deg, #fff0f3 0%, #ffccd5 100%);
+        }
+
         body {
             margin: 0;
             height: 100vh;
-            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            background: var(--bg-gradient);
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Poppins', sans-serif;
             overflow: hidden;
             touch-action: none; 
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             padding: 40px;
-            border-radius: 30px;
+            border-radius: 25px;
             text-align: center;
-            width: 320px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 300px;
+            box-shadow: 0 20px 40px rgba(255, 77, 109, 0.2);
             z-index: 10;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid #ffffff;
         }
 
-        h1 { color: #d63384; margin-bottom: 10px; }
-        p { color: #444; margin-bottom: 20px; }
+        h1 { color: var(--primary-pink); margin-bottom: 10px; font-size: 24px; }
+        p { color: #594d5b; line-height: 1.6; font-size: 16px; }
 
         .buttons {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 20px;
-            position: relative;
+            gap: 15px;
+            margin-top: 25px;
+            height: 80px; /* Space for scaling Yes button */
         }
 
         button {
-            padding: 12px 25px;
+            padding: 12px 28px;
             border: none;
-            border-radius: 50px;
+            border-radius: 15px;
             cursor: pointer;
-            font-size: 18px;
-            font-weight: bold;
-            transition: transform 0.2s ease;
+            font-size: 16px;
+            font-weight: 700;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         #yesBtn {
-            background: #ff4757;
+            background: var(--primary-pink);
             color: white;
-            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 77, 109, 0.4);
         }
 
         #noBtn {
-            background: #f1f2f6;
-            color: #57606f;
+            background: #fff;
+            color: #ff8fa3;
+            border: 1px solid #ffccd5;
             z-index: 15;
         }
 
         #overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.8);
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 240, 243, 0.95);
             display: none;
             justify-content: center;
             align-items: center;
@@ -81,19 +86,13 @@
             padding: 40px;
             border-radius: 30px;
             text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
-            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes pop {
-            from { transform: scale(0); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            border: 3px solid var(--primary-pink);
         }
 
         canvas {
             position: fixed;
-            top: 0;
-            left: 0;
+            top: 0; left: 0;
             z-index: 1;
             pointer-events: none;
         }
@@ -106,7 +105,7 @@
 <div class="container">
     <h1>Hey Sonali...❤️</h1>
     <p>I want to grow old with you, laugh with you, and love you endlessly.</p>
-    <p><b>Will you be mine? 💖</b></p>
+    <p><b>Will you be mine?</b></p>
 
     <div class="buttons">
         <button id="yesBtn">Yes ❤️</button>
@@ -116,7 +115,8 @@
 
 <div id="overlay">
     <div class="popup">
-        <h2 style="color: #ff4757; font-size: 2rem;">Saurabh ❤️ Sonali</h2>
+        <h2 style="color: var(--primary-pink); font-size: 2.5rem; margin: 0;">Forever? ❤️</h2>
+        <p style="font-size: 1.2rem;">Saurabh ❤️ Sonali</p>
         <p>I choose you today and every day after this...❤️</p>
     </div>
 </div>
@@ -125,6 +125,7 @@
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     let hearts = [];
+    let mouse = { x: -1000, y: -1000 };
 
     function resize() {
         canvas.width = window.innerWidth;
@@ -139,15 +140,29 @@
         }
         reset() {
             this.x = Math.random() * canvas.width;
-            this.y = canvas.height + 20;
-            // Only hearts of different sizes
-            this.size = Math.random() * 25 + 10; 
-            this.speed = Math.random() * 1 + 0.5;
-            this.opacity = Math.random() * 0.5 + 0.3;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 20 + 10;
+            this.baseSpeedX = (Math.random() - 0.5) * 1;
+            this.baseSpeedY = (Math.random() - 0.5) * 1;
+            this.opacity = Math.random() * 0.5 + 0.2;
         }
         update() {
-            this.y -= this.speed;
-            if (this.y < -30) this.reset();
+            // Attraction Logic (Original feature restored)
+            let dx = mouse.x - this.x;
+            let dy = mouse.y - this.y;
+            let distance = Math.sqrt(dx*dx + dy*dy);
+            
+            if (distance < 300) {
+                this.x += dx * 0.01;
+                this.y += dy * 0.01;
+            }
+
+            this.x += this.baseSpeedX;
+            this.y += this.baseSpeedY;
+
+            // Bounce off edges
+            if (this.x < 0 || this.x > canvas.width) this.baseSpeedX *= -1;
+            if (this.y < 0 || this.y > canvas.height) this.baseSpeedY *= -1;
         }
         draw() {
             ctx.globalAlpha = this.opacity;
@@ -156,7 +171,23 @@
         }
     }
 
-    for (let i = 0; i < 40; i++) hearts.push(new Heart());
+    for (let i = 0; i < 60; i++) hearts.push(new Heart());
+
+    // --- Cursor & Gyro Sensors ---
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
+    if(!isMobile) {
+        window.addEventListener("mousemove", (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+    } else if (window.DeviceOrientationEvent) {
+        window.addEventListener('deviceorientation', (e) => {
+            // Map tilt to screen coordinates
+            mouse.x = (canvas.width / 2) + (e.gamma * 10);
+            mouse.y = (canvas.height / 2) + (e.beta * 10);
+        });
+    }
 
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -165,25 +196,28 @@
     }
     animate();
 
+    // --- Button Logic (Safe Screen Constraints) ---
     const noBtn = document.getElementById("noBtn");
     const yesBtn = document.getElementById("yesBtn");
     let yesScale = 1;
 
     const moveNo = () => {
-        // Calculate safe boundaries so the button stays fully on screen
-        const padding = 20;
-        const maxX = window.innerWidth - noBtn.offsetWidth - padding;
-        const maxY = window.innerHeight - noBtn.offsetHeight - padding;
+        const btnWidth = noBtn.offsetWidth;
+        const btnHeight = noBtn.offsetHeight;
         
-        // Ensure values aren't negative if screen is tiny
-        const randomX = Math.max(padding, Math.random() * maxX);
-        const randomY = Math.max(padding, Math.random() * maxY);
+        // Ensure the button stays within 20px of the edge
+        const padding = 20;
+        const availableWidth = window.innerWidth - btnWidth - (padding * 2);
+        const availableHeight = window.innerHeight - btnHeight - (padding * 2);
+        
+        const randomX = padding + Math.random() * availableWidth;
+        const randomY = padding + Math.random() * availableHeight;
         
         noBtn.style.position = "fixed";
         noBtn.style.left = `${randomX}px`;
         noBtn.style.top = `${randomY}px`;
+        noBtn.style.margin = "0"; // Remove default margins
 
-        // Every time she misses, make 'Yes' bigger and harder to ignore
         yesScale += 0.15;
         yesBtn.style.transform = `scale(${yesScale})`;
     };
