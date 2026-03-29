@@ -54,29 +54,6 @@ button {
     top: 20px;
 }
 
-#overlay {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    background: rgba(255,182,193,0.6);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.popup {
-    background: white;
-    padding: 30px;
-    border-radius: 20px;
-    animation: pop 0.3s ease;
-}
-
-@keyframes pop {
-    from { transform: scale(0.5); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
 canvas {
     position: fixed;
     top: 0;
@@ -89,9 +66,9 @@ canvas {
 <body>
 
 <div class="container">
-    <h1>Hey Sonali...❤️</h1>
-    <p>I want to grow old with you, laugh with you, and love you endlessly.</p>
-    <p>Will you be mine? 💖</p>
+    <h1 id="title"></h1>
+    <p id="line1"></p>
+    <p id="line2"></p>
 
     <div class="buttons">
         <button id="yesBtn">Yes ❤️</button>
@@ -99,65 +76,64 @@ canvas {
     </div>
 </div>
 
-<div id="overlay">
-    <div class="popup">
-        <h2>💖 Wow! 💖</h2>
-        <p>I choose you today and every day after this...❤️</p>
-    </div>
-</div>
-
 <canvas id="canvas"></canvas>
 
 <script>
+// 🎬 TYPEWRITER
+function typeWriter(element, text, speed = 40) {
+    let i = 0;
+    function typing() {
+        if (i < text.length) {
+            element.innerHTML += text.charAt(i);
+            i++;
+            setTimeout(typing, speed);
+        }
+    }
+    typing();
+}
+
+typeWriter(document.getElementById("title"), "Hey Sonali...❤️");
+setTimeout(() => typeWriter(document.getElementById("line1"), "I want to grow old with you..."), 800);
+setTimeout(() => typeWriter(document.getElementById("line2"), "Will you be mine? 💖"), 2000);
+
+// 🎮 SMART NO BUTTON
+let escapeLevel = 0;
+const noBtn = document.getElementById("noBtn");
+
+noBtn.addEventListener("mouseover", () => {
+    escapeLevel++;
+
+    if (escapeLevel === 1) {
+        moveBtn(100);
+    } else if (escapeLevel === 2) {
+        moveBtn(200);
+    } else if (escapeLevel === 3) {
+        noBtn.style.transform = "scale(0.7)";
+        moveBtn(300);
+    } else if (escapeLevel === 4) {
+        noBtn.innerText = "Are you sure? 😏";
+        moveBtn(400);
+    } else {
+        noBtn.style.display = "none";
+    }
+});
+
+function moveBtn(range) {
+    const maxX = window.innerWidth - noBtn.offsetWidth;
+    const maxY = window.innerHeight - noBtn.offsetHeight;
+
+    noBtn.style.position = "fixed";
+    noBtn.style.left = Math.random() * maxX + "px";
+    noBtn.style.top = Math.random() * maxY + "px";
+}
+
+// 💖 HEART BACKGROUND
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// 🎮 CONTROL SYSTEM
-let controlMode = "mouse";
-let control = { x: 0, y: 0 };
-
-// 📱 INIT CONTROLS
-function initControls() {
-    if (window.DeviceOrientationEvent) {
-        controlMode = "gyro";
-
-        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-            document.body.addEventListener("click", () => {
-                DeviceOrientationEvent.requestPermission()
-                    .then(permissionState => {
-                        if (permissionState === 'granted') {
-                            window.addEventListener("deviceorientation", handleOrientation);
-                        } else {
-                            enableMouse();
-                        }
-                    })
-                    .catch(enableMouse);
-            }, { once: true });
-        } else {
-            window.addEventListener("deviceorientation", handleOrientation);
-        }
-    } else {
-        enableMouse();
-    }
-}
-
-function enableMouse() {
-    controlMode = "mouse";
-    window.addEventListener("mousemove", (e) => {
-        control.x = (e.clientX - canvas.width / 2) / 50;
-        control.y = (e.clientY - canvas.height / 2) / 50;
-    });
-}
-
-function handleOrientation(event) {
-    control.x = event.gamma / 10;
-    control.y = event.beta / 10;
-}
-
-// 💖 HEART CLASS
 class Heart {
     constructor() {
         this.size = Math.random() * 20 + 10;
@@ -173,47 +149,52 @@ class Heart {
     }
 
     update() {
-        if (controlMode === "gyro") {
-            this.x += control.x + this.dx;
-            this.y += control.y + this.dy;
-        } else {
-            let dx = (control.x * 50 + canvas.width / 2) - this.x;
-            let dy = (control.y * 50 + canvas.height / 2) - this.y;
+        this.x += this.dx;
+        this.y += this.dy;
 
-            this.x += dx * 0.002 + this.dx;
-            this.y += dy * 0.002 + this.dy;
-        }
+        const p = this.size;
 
-        // ✅ BOUNDARY WITH PADDING
-        const padding = this.size;
-
-        if (this.x < padding) {
-            this.x = padding;
-            this.dx *= -1;
-        }
-
-        if (this.x > canvas.width - padding) {
-            this.x = canvas.width - padding;
-            this.dx *= -1;
-        }
-
-        if (this.y < padding) {
-            this.y = padding;
-            this.dy *= -1;
-        }
-
-        if (this.y > canvas.height - padding) {
-            this.y = canvas.height - padding;
-            this.dy *= -1;
-        }
+        if (this.x < p || this.x > canvas.width - p) this.dx *= -1;
+        if (this.y < p || this.y > canvas.height - p) this.dy *= -1;
     }
 }
 
-// 💖 CREATE HEARTS
 let hearts = [];
-for (let i = 0; i < 120; i++) {
-    hearts.push(new Heart());
+for (let i = 0; i < 100; i++) hearts.push(new Heart());
+
+// 🎉 CONFETTI / EXPLOSION
+let particles = [];
+
+function explode() {
+    for (let i = 0; i < 150; i++) {
+        particles.push({
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            dx: (Math.random() - 0.5) * 10,
+            dy: (Math.random() - 0.5) * 10,
+            life: 100
+        });
+    }
 }
+
+function drawParticles() {
+    particles.forEach((p, i) => {
+        ctx.fillText("💖", p.x, p.y);
+        p.x += p.dx;
+        p.y += p.dy;
+        p.life--;
+
+        if (p.life <= 0) particles.splice(i, 1);
+    });
+}
+
+// 💖 YES CLICK
+document.getElementById("yesBtn").onclick = () => {
+    explode();
+
+    // vibration
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+};
 
 // 🎬 ANIMATION
 function animate() {
@@ -224,35 +205,14 @@ function animate() {
         h.draw();
     });
 
+    drawParticles();
+
     requestAnimationFrame(animate);
 }
 
-// 😈 NO BUTTON ESCAPE
-document.getElementById("noBtn").onmouseover = function () {
-    this.style.position = "fixed";
-
-    const maxX = window.innerWidth - this.offsetWidth;
-    const maxY = window.innerHeight - this.offsetHeight;
-
-    this.style.left = Math.random() * maxX + "px";
-    this.style.top = Math.random() * maxY + "px";
-};
-
-// 💖 YES CLICK
-document.getElementById("yesBtn").onclick = () => {
-    const overlay = document.getElementById("overlay");
-    overlay.style.display = "flex";
-
-    setTimeout(() => {
-        overlay.style.display = "none";
-    }, 3000);
-};
-
-// 🚀 START
-initControls();
 animate();
 
-// 📱 HANDLE RESIZE
+// 📱 RESIZE
 window.addEventListener("resize", () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
