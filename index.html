@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Just One Question ❤️</title>
+
 <style>
 body {
     margin: 0;
@@ -11,7 +12,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     overflow: hidden;
 }
 
@@ -23,7 +24,6 @@ body {
     width: 320px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     z-index: 10;
-    position: relative;
 }
 
 .buttons {
@@ -38,8 +38,6 @@ button {
     border-radius: 10px;
     cursor: pointer;
     font-size: 16px;
-    position: relative;
-    transition: transform 0.2s;
 }
 
 #yesBtn {
@@ -56,7 +54,7 @@ button {
     position: fixed;
     width: 100%;
     height: 100%;
-    backdrop-filter: blur(8px) brightness(1.1);
+    background: rgba(255,182,193,0.6);
     display: none;
     justify-content: center;
     align-items: center;
@@ -67,9 +65,8 @@ button {
     background: white;
     padding: 30px;
     border-radius: 20px;
-    text-align: center;
     animation: pop 0.3s ease;
-    max-width: 80%;
+    text-align: center;
 }
 
 @keyframes pop {
@@ -83,18 +80,16 @@ canvas {
     left: 0;
     z-index: 1;
 }
-
-.typing span {
-    border-right: 2px solid #000;
-    padding-right: 2px;
-    white-space: nowrap;
-}
 </style>
 </head>
+
 <body>
 
 <div class="container">
-    <h1 class="typing" id="typing"></h1>
+    <h1>Hey Sonali...❤️</h1>
+    <p>I want to grow old with you, laugh with you, and love you endlessly.</p>
+    <p>Will you be mine? 💖</p>
+
     <div class="buttons">
         <button id="yesBtn">Yes ❤️</button>
         <button id="noBtn">No 😅</button>
@@ -104,141 +99,125 @@ canvas {
 <div id="overlay">
     <div class="popup">
         <h2>💖 Saurabh ❤️ Sonali 💖</h2>
-        <p>I want to grow old with you, laugh with you, and love you endlessly.<br>Will you be mine? 💖</p>
+        <p>I choose you today and every day after this...❤️</p>
     </div>
 </div>
 
 <canvas id="canvas"></canvas>
 
 <script>
-// ---------- TYPING EFFECT ----------
-const message = "Hey Sonali...❤️";
-const typingEl = document.getElementById("typing");
-let idx = 0;
-function typeText() {
-    if(idx < message.length){
-        typingEl.innerHTML += message[idx];
-        idx++;
-        setTimeout(typeText, 150);
-    }
-}
-typeText();
-
-// ---------- CANVAS HEARTS ----------
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 let hearts = [];
-let mouse = { x: canvas.width/2, y: canvas.height/2 };
-let isMobile = /Mobi|Android/i.test(navigator.userAgent);
+const MAX_HEARTS = 120; // limit hearts to prevent lag
+let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
 
+// Heart class
 class Heart {
     constructor() {
-        this.x = Math.random()*canvas.width;
-        this.y = Math.random()*canvas.height;
-        this.size = Math.random()*15 + 10;
-        this.dx = (Math.random()-0.5)*2;
-        this.dy = (Math.random()-0.5)*2;
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 20 + 10;
+        this.dx = (Math.random() - 0.5) * 1.5;
+        this.dy = (Math.random() - 0.5) * 1.5;
     }
+
     draw() {
         ctx.font = this.size + "px Arial";
         ctx.fillText("❤️", this.x, this.y);
     }
+
     update() {
+        // Attraction to mouse/gyro
         let dx = mouse.x - this.x;
         let dy = mouse.y - this.y;
 
-        if(!isMobile){
-            this.x += dx*0.002 + this.dx;
-            this.y += dy*0.002 + this.dy;
-        } else {
-            this.x += this.dx;
-            this.y += this.dy;
-        }
+        this.x += dx * 0.002 + this.dx;
+        this.y += dy * 0.002 + this.dy;
 
-        // keep inside screen
-        if(this.x < 0) this.x = 0;
-        if(this.x > canvas.width) this.x = canvas.width;
-        if(this.y < 0) this.y = 0;
-        if(this.y > canvas.height) this.y = canvas.height;
+        // Keep hearts inside screen
+        if (this.x <= 0) { this.x = 0; this.dx *= -1; }
+        if (this.x >= canvas.width) { this.x = canvas.width; this.dx *= -1; }
+        if (this.y <= 0) { this.y = 0; this.dy *= -1; }
+        if (this.y >= canvas.height) { this.y = canvas.height; this.dy *= -1; }
     }
 }
 
-for(let i=0;i<100;i++){
-    hearts.push(new Heart());
+// Create initial hearts
+for (let i = 0; i < MAX_HEARTS; i++) hearts.push(new Heart());
+
+// Detect device type for gyro
+let isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
+// Mouse move for desktop
+if(!isMobile){
+    window.addEventListener("mousemove", (e)=>{
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+    });
 }
 
-function animate() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    hearts.forEach(h=>{
-        h.update();
-        h.draw();
-    });
+// Gyroscope for mobile
+if(isMobile && window.DeviceOrientationEvent){
+    window.addEventListener('deviceorientation', function(event){
+        let gamma = event.gamma || 0; // left-right tilt
+        let beta = event.beta || 0;   // front-back tilt
+
+        // Map tilt to canvas coordinates
+        mouse.x = canvas.width/2 + gamma * 8; // sensitivity adjust
+        mouse.y = canvas.height/2 + beta * 8;
+
+        // clamp to screen
+        mouse.x = Math.max(0, Math.min(canvas.width, mouse.x));
+        mouse.y = Math.max(0, Math.min(canvas.height, mouse.y));
+    }, true);
+}
+
+// Animation loop
+function animate(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    hearts.forEach(h => { h.update(); h.draw(); });
     requestAnimationFrame(animate);
 }
 animate();
 
-window.addEventListener("mousemove",(e)=>{
-    if(!isMobile){
-        mouse.x = e.clientX;
-        mouse.y = e.clientY;
-    }
-});
-
-if(window.DeviceOrientationEvent){
-    window.addEventListener("deviceorientation", function(event){
-        if(isMobile){
-            mouse.x = canvas.width/2 + event.gamma*20;
-            mouse.y = canvas.height/2 + event.beta*20;
-        }
-    });
-}
-
-// ---------- YES BUTTON ----------
-const yesBtn = document.getElementById("yesBtn");
-const overlay = document.getElementById("overlay");
-yesBtn.addEventListener("click", ()=>{
-    overlay.style.display = "flex";
-    setTimeout(()=>{ overlay.style.display = "none"; }, 3000);
-});
-
-// ---------- NO BUTTON ----------
+// NO button playful
 const noBtn = document.getElementById("noBtn");
-let noMoved = false;
+noBtn.onmouseover = function(){
+    const maxX = window.innerWidth - this.offsetWidth;
+    const maxY = window.innerHeight - this.offsetHeight;
+    this.style.position = "fixed";
+    this.style.left = Math.random() * maxX + "px";
+    this.style.top = Math.random() * maxY + "px";
+};
 
-noBtn.addEventListener("mouseenter", ()=>{
-    if(!noMoved){
-        noMoved = true;
-        setInterval(moveNoButton, 700); // jumps every 0.7 sec
-    }
-});
+// YES button click with heart burst and popup
+const yesBtn = document.getElementById("yesBtn");
+yesBtn.onclick = () => {
+    const overlay = document.getElementById("overlay");
+    overlay.style.display = "flex";
 
-function moveNoButton(){
-    const btnWidth = noBtn.offsetWidth;
-    const btnHeight = noBtn.offsetHeight;
+    setTimeout(() => { overlay.style.display = "none"; }, 3000);
 
-    const scale = 1 + Math.random()*0.1; 
-    const rotation = Math.random()*15 - 7.5;
+    // Heart burst effect
+    hearts.forEach(h => {
+        h.dx += (Math.random() - 0.5) * 2;
+        h.dy += (Math.random() - 0.5) * 2;
+        h.size += 2; // small pop effect
+    });
+};
 
-    const maxX = window.innerWidth - btnWidth*scale - 10;
-    const maxY = window.innerHeight - btnHeight*scale - 10;
-
-    const left = Math.random() * maxX;
-    const top = Math.random() * maxY;
-
-    noBtn.style.position = "fixed";
-    noBtn.style.left = left + "px";
-    noBtn.style.top = top + "px";
-    noBtn.style.transform = `rotate(${rotation}deg) scale(${scale})`;
-}
-
-// ---------- RESIZE ----------
+// Handle resize
 window.addEventListener("resize", ()=>{
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 });
+
 </script>
+
 </body>
 </html>
