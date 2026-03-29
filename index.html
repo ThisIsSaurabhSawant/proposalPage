@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Just One Question ❤️</title>
-
 <style>
 body {
     margin: 0;
@@ -24,23 +23,16 @@ body {
     width: 320px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     z-index: 10;
-    transition: 0.4s;
-}
-
-.blur {
-    filter: blur(8px);
-    transform: scale(0.95);
 }
 
 .buttons {
     display: flex;
-    justify-content: center;
-    gap: 20px;
+    justify-content: space-between;
     margin-top: 20px;
 }
 
 button {
-    padding: 10px 22px;
+    padding: 10px 20px;
     border: none;
     border-radius: 10px;
     cursor: pointer;
@@ -57,19 +49,11 @@ button {
     color: white;
 }
 
-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1;
-}
-
-/* POPUP */
 #overlay {
     position: fixed;
     width: 100%;
     height: 100%;
-    background: rgba(255,182,193,0.7);
+    background: rgba(255,182,193,0.6);
     display: none;
     justify-content: center;
     align-items: center;
@@ -78,19 +62,31 @@ canvas {
 
 .popup {
     background: white;
-    padding: 40px;
+    padding: 30px;
     border-radius: 20px;
+    animation: pop 0.3s ease;
     text-align: center;
+}
+
+@keyframes pop {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
 }
 </style>
 </head>
-
 <body>
 
 <div class="container" id="mainBox">
-    <h1 id="title"></h1>
-    <p id="line1"></p>
-    <p id="line2"></p>
+    <h1>Hey Sonali...❤️</h1>
+    <p>I want to grow old with you, laugh with you, and love you endlessly.</p>
+    <p>Will you be mine? 💖</p>
 
     <div class="buttons">
         <button id="yesBtn">Yes ❤️</button>
@@ -100,149 +96,111 @@ canvas {
 
 <div id="overlay">
     <div class="popup">
-        <h2 id="finalText"></h2>
-        <p>I choose you today and every day after this...❤️</p>
+        <h2>💖 Wow! 💖</h2>
+        <p id="finalText">I choose you today and every day after this...❤️</p>
     </div>
 </div>
 
 <canvas id="canvas"></canvas>
 
 <script>
-// TYPEWRITER
-function typeWriter(el, text, speed=40){
-    el.innerHTML = ""; // ✅ reset fix
-    let i=0;
-    function t(){
-        if(i<text.length){
-            el.innerHTML+=text[i++];
-            setTimeout(t,speed);
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let hearts = [];
+let mouse = { x: canvas.width/2, y: canvas.height/2 };
+let isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+let gyroX = 0, gyroY = 0;
+
+// HEART CLASS
+class Heart {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 20 + 10;
+        this.dx = (Math.random()-0.5) * 2;
+        this.dy = (Math.random()-0.5) * 2;
+    }
+    draw() {
+        ctx.font = this.size + "px Arial";
+        ctx.fillText("❤️", this.x, this.y);
+    }
+    update() {
+        if(isMobile){
+            this.x += this.dx + gyroX*5;
+            this.y += this.dy + gyroY*5;
+        } else {
+            let dx = mouse.x - this.x;
+            let dy = mouse.y - this.y;
+            this.x += dx*0.002 + this.dx;
+            this.y += dy*0.002 + this.dy;
         }
-    }
-    t();
-}
 
-typeWriter(title,"Hey Sonali...❤️");
-setTimeout(()=>typeWriter(line1,"I want to grow old with you..."),800);
-setTimeout(()=>typeWriter(line2,"Will you be mine? 💖"),2000);
-
-// 😈 NO BUTTON
-let level=0;
-noBtn.onmouseover=()=>{
-    level++;
-    noBtn.style.position="fixed";
-    noBtn.style.left=Math.random()*(innerWidth-100)+"px";
-    noBtn.style.top=Math.random()*(innerHeight-50)+"px";
-};
-
-// 💖 CANVAS
-const canvas=document.getElementById("canvas");
-const ctx=canvas.getContext("2d");
-
-canvas.width=innerWidth;
-canvas.height=innerHeight;
-
-let control={x:0,y:0};
-
-window.addEventListener("mousemove",(e)=>{
-    control.x=(e.clientX-canvas.width/2)/100;
-    control.y=(e.clientY-canvas.height/2)/100;
-});
-
-// HEARTS
-let hearts=[];
-for(let i=0;i<100;i++){
-    hearts.push({
-        size:Math.random()*20+10,
-        x:Math.random()*canvas.width,
-        y:Math.random()*canvas.height,
-        dx:(Math.random()-0.5)*2,
-        dy:(Math.random()-0.5)*2
-    });
-}
-
-function drawHearts(){
-    hearts.forEach(h=>{
-        h.x+=h.dx+control.x;
-        h.y+=h.dy+control.y;
-
-        const p=h.size;
-
-        // ✅ HARD CLAMP (fix)
-        if(h.x<p){ h.x=p; h.dx*=-1; }
-        if(h.x>canvas.width-p){ h.x=canvas.width-p; h.dx*=-1; }
-        if(h.y<p){ h.y=p; h.dy*=-1; }
-        if(h.y>canvas.height-p){ h.y=canvas.height-p; h.dy*=-1; }
-
-        ctx.font=h.size+"px Arial";
-        ctx.fillText("❤️",h.x,h.y);
-    });
-}
-
-// PARTICLES
-let particles=[];
-function explode(){
-    for(let i=0;i<150;i++){
-        particles.push({
-            x:canvas.width/2,
-            y:canvas.height/2,
-            dx:(Math.random()-0.5)*10,
-            dy:(Math.random()-0.5)*10,
-            life:100
-        });
+        // BOUNCE/CLAMP inside screen
+        if(this.x < 0){ this.x=0; this.dx *= -1; }
+        if(this.x > canvas.width){ this.x=canvas.width; this.dx *= -1; }
+        if(this.y < 0){ this.y=0; this.dy *= -1; }
+        if(this.y > canvas.height){ this.y=canvas.height; this.dy *= -1; }
     }
 }
 
-function drawParticles(){
-    particles.forEach((p,i)=>{
-        ctx.fillText("💖",p.x,p.y);
-        p.x+=p.dx;
-        p.y+=p.dy;
-        p.life--;
-        if(p.life<=0) particles.splice(i,1);
+// CREATE HEARTS
+for(let i=0;i<120;i++) hearts.push(new Heart());
+
+// MOUSE TRACK
+if(!isMobile){
+    window.addEventListener("mousemove", e=>{
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
     });
 }
 
-// 💖 YES CLICK (FIXED)
-let clicked=false;
+// GYRO TRACK
+if(isMobile){
+    window.addEventListener('deviceorientation', e=>{
+        gyroX = e.gamma/45; // tilt left-right
+        gyroY = e.beta/45;  // tilt up-down
+    });
+}
 
-// 💖 YES CLICK (multi-click safe)
-yesBtn.onclick = () => {
-    explode(); // create particles
-
-    // blur background
-    document.getElementById("mainBox").classList.add("blur");
-
-    // show popup
-    const overlay = document.getElementById("overlay");
-    overlay.style.display = "flex";
-
-    // reset & type text
-    const finalEl = document.getElementById("finalText");
-    finalEl.innerHTML = ""; // ✅ reset so text doesn't repeat
-    typeWriter(finalEl, "Saurabh ❤️ Sonali", 80);
-
-    // hide after 3 seconds
-    setTimeout(() => {
-        overlay.style.display = "none";
-        document.getElementById("mainBox").classList.remove("blur");
-    }, 3000);
-};
-
-// ANIMATION
+// ANIMATION LOOP
 function animate(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    drawHearts();
-    drawParticles();
+    hearts.forEach(h=>{h.update(); h.draw();});
     requestAnimationFrame(animate);
 }
 animate();
 
-// RESIZE
-onresize=()=>{
-    canvas.width=innerWidth;
-    canvas.height=innerHeight;
-};
-</script>
+// NO BUTTON PLAYFUL
+const noBtn = document.getElementById("noBtn");
+noBtn.addEventListener("mouseover", ()=>{
+    const maxX = window.innerWidth - noBtn.offsetWidth;
+    const maxY = window.innerHeight - noBtn.offsetHeight;
+    noBtn.style.position = "fixed";
+    noBtn.style.left = Math.random()*maxX + "px";
+    noBtn.style.top = Math.random()*maxY + "px";
+});
 
+// YES BUTTON
+const yesBtn = document.getElementById("yesBtn");
+yesBtn.onclick = ()=>{
+    const overlay = document.getElementById("overlay");
+    overlay.style.display = "flex";
+
+    // reset text so no repeating
+    const finalEl = document.getElementById("finalText");
+    finalEl.innerHTML = "I choose you today and every day after this...❤️";
+
+    setTimeout(()=>{ overlay.style.display = "none"; }, 3000);
+};
+
+// RESIZE
+window.addEventListener("resize", ()=>{
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+</script>
 </body>
 </html>
