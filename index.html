@@ -4,18 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Just One Question ❤️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --primary-pink: #ff4d6d;
             --soft-pink: #ffccd5;
-            --bg-gradient: linear-gradient(135deg, #fff0f3 0%, #ffccd5 100%);
+            --white: #ffffff;
         }
 
         body {
             margin: 0;
             height: 100vh;
-            background: var(--bg-gradient);
+            background: linear-gradient(135deg, #fff0f3 0%, #ffccd5 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -28,66 +29,80 @@
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             padding: 40px;
-            border-radius: 25px;
+            border-radius: 30px;
             text-align: center;
-            width: 300px;
-            box-shadow: 0 20px 40px rgba(255, 77, 109, 0.2);
+            width: 320px;
+            box-shadow: 0 20px 60px rgba(255, 77, 109, 0.3);
             z-index: 10;
-            border: 2px solid #ffffff;
+            border: 3px solid var(--white);
+            transition: all 0.3s ease;
         }
 
-        h1 { color: var(--primary-pink); margin-bottom: 10px; font-size: 24px; }
-        p { color: #594d5b; line-height: 1.6; font-size: 16px; }
+        h1 { color: var(--primary-pink); margin: 0 0 10px; font-size: 26px; }
+        p { color: #594d5b; font-size: 16px; margin-bottom: 5px; }
+        
+        #scoreCounter {
+            font-size: 12px;
+            color: #ff8fa3;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            display: block;
+        }
 
         .buttons {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 15px;
-            margin-top: 25px;
-            height: 80px; /* Space for scaling Yes button */
+            margin-top: 20px;
+            min-height: 100px;
         }
 
         button {
-            padding: 12px 28px;
+            padding: 14px 30px;
             border: none;
-            border-radius: 15px;
+            border-radius: 20px;
             cursor: pointer;
             font-size: 16px;
             font-weight: 700;
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            outline: none;
         }
 
         #yesBtn {
             background: var(--primary-pink);
             color: white;
-            box-shadow: 0 4px 15px rgba(255, 77, 109, 0.4);
+            box-shadow: 0 10px 20px rgba(255, 77, 109, 0.4);
         }
 
         #noBtn {
-            background: #fff;
-            color: #ff8fa3;
-            border: 1px solid #ffccd5;
-            z-index: 15;
+            background: var(--white);
+            color: var(--primary-pink);
+            border: 2px solid var(--soft-pink);
+            z-index: 100; /* Ensure it stays above everything */
         }
 
         #overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 240, 243, 0.95);
+            background: rgba(255, 77, 109, 0.95);
             display: none;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            color: white;
+            text-align: center;
         }
 
-        .popup {
-            background: white;
-            padding: 40px;
-            border-radius: 30px;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-            border: 3px solid var(--primary-pink);
+        .shake { animation: shake 0.5s; }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            50% { transform: translate(-1px, 2px) rotate(1deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
 
         canvas {
@@ -102,8 +117,9 @@
 
 <canvas id="canvas"></canvas>
 
-<div class="container">
-    <h1>Hey Sonali...❤️</h1>
+<div class="container" id="mainCard">
+    <span id="scoreCounter">Attempts to say No: 0</span>
+    <h1>Hey Sonali... ❤️</h1>
     <p>I want to grow old with you, laugh with you, and love you endlessly.</p>
     <p><b>Will you be mine?</b></p>
 
@@ -114,11 +130,9 @@
 </div>
 
 <div id="overlay">
-    <div class="popup">
-        <h2 style="color: var(--primary-pink); font-size: 2.5rem; margin: 0;">Forever? ❤️</h2>
-        <p style="font-size: 1.2rem;">Saurabh ❤️ Sonali</p>
-        <p>I choose you today and every day after this...❤️</p>
-    </div>
+    <h1 style="color: white; font-size: 3rem;">YAAAY! 💖</h1>
+    <h2 style="font-size: 2rem;">Saurabh ❤️ Sonali</h2>
+    <p style="font-size: 1.2rem;">Locked in forever! No refunds! 😘</p>
 </div>
 
 <script>
@@ -126,6 +140,7 @@
     const ctx = canvas.getContext("2d");
     let hearts = [];
     let mouse = { x: -1000, y: -1000 };
+    let gameStrength = 0.01; // Increases as she tries to click No
 
     function resize() {
         canvas.width = window.innerWidth;
@@ -135,32 +150,29 @@
     resize();
 
     class Heart {
-        constructor() {
-            this.reset();
-        }
+        constructor() { this.reset(); }
         reset() {
             this.x = Math.random() * canvas.width;
             this.y = Math.random() * canvas.height;
             this.size = Math.random() * 20 + 10;
-            this.baseSpeedX = (Math.random() - 0.5) * 1;
-            this.baseSpeedY = (Math.random() - 0.5) * 1;
-            this.opacity = Math.random() * 0.5 + 0.2;
+            this.baseSpeedX = (Math.random() - 0.5) * 1.5;
+            this.baseSpeedY = (Math.random() - 0.5) * 1.5;
+            this.opacity = Math.random() * 0.5 + 0.3;
         }
         update() {
-            // Attraction Logic (Original feature restored)
             let dx = mouse.x - this.x;
             let dy = mouse.y - this.y;
-            let distance = Math.sqrt(dx*dx + dy*dy);
+            let dist = Math.sqrt(dx*dx + dy*dy);
             
-            if (distance < 300) {
-                this.x += dx * 0.01;
-                this.y += dy * 0.01;
+            // Interaction: Hearts gravitate toward cursor/gyro
+            if (dist < 400) {
+                this.x += dx * gameStrength;
+                this.y += dy * gameStrength;
             }
 
             this.x += this.baseSpeedX;
             this.y += this.baseSpeedY;
 
-            // Bounce off edges
             if (this.x < 0 || this.x > canvas.width) this.baseSpeedX *= -1;
             if (this.y < 0 || this.y > canvas.height) this.baseSpeedY *= -1;
         }
@@ -175,17 +187,12 @@
 
     // --- Cursor & Gyro Sensors ---
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-
     if(!isMobile) {
-        window.addEventListener("mousemove", (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-        });
-    } else if (window.DeviceOrientationEvent) {
+        window.addEventListener("mousemove", (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+    } else {
         window.addEventListener('deviceorientation', (e) => {
-            // Map tilt to screen coordinates
-            mouse.x = (canvas.width / 2) + (e.gamma * 10);
-            mouse.y = (canvas.height / 2) + (e.beta * 10);
+            mouse.x = (canvas.width / 2) + (e.gamma * 12);
+            mouse.y = (canvas.height / 2) + (e.beta * 12);
         });
     }
 
@@ -196,31 +203,50 @@
     }
     animate();
 
-    // --- Button Logic (Safe Screen Constraints) ---
+    // --- The "Addictive" No Button Logic ---
     const noBtn = document.getElementById("noBtn");
     const yesBtn = document.getElementById("yesBtn");
+    const mainCard = document.getElementById("mainCard");
+    const scoreText = document.getElementById("scoreCounter");
+    
+    let attempts = 0;
     let yesScale = 1;
 
-    const moveNo = () => {
-        const btnWidth = noBtn.offsetWidth;
-        const btnHeight = noBtn.offsetHeight;
+    function moveNo() {
+        attempts++;
+        scoreText.innerText = `Attempts to say No: ${attempts}`;
         
-        // Ensure the button stays within 20px of the edge
+        // 1. Shake the whole card to make it feel reactive
+        mainCard.classList.add('shake');
+        setTimeout(() => mainCard.classList.remove('shake'), 500);
+
+        // 2. Increase background chaos
+        gameStrength += 0.005;
+
+        // 3. GROW the Yes button
+        yesScale += 0.2;
+        yesBtn.style.transform = `scale(${yesScale})`;
+
+        // 4. TELEPORT No button (STRICT screen boundaries)
         const padding = 20;
-        const availableWidth = window.innerWidth - btnWidth - (padding * 2);
-        const availableHeight = window.innerHeight - btnHeight - (padding * 2);
+        const btnRect = noBtn.getBoundingClientRect();
         
-        const randomX = padding + Math.random() * availableWidth;
-        const randomY = padding + Math.random() * availableHeight;
+        // We calculate based on the current live width/height
+        const maxX = window.innerWidth - btnRect.width - padding;
+        const maxY = window.innerHeight - btnRect.height - padding;
+        
+        const randomX = Math.max(padding, Math.random() * maxX);
+        const randomY = Math.max(padding, Math.random() * maxY);
         
         noBtn.style.position = "fixed";
         noBtn.style.left = `${randomX}px`;
         noBtn.style.top = `${randomY}px`;
-        noBtn.style.margin = "0"; // Remove default margins
+        noBtn.style.margin = "0";
 
-        yesScale += 0.15;
-        yesBtn.style.transform = `scale(${yesScale})`;
-    };
+        // 5. Change Text for variety
+        const texts = ["Nice try!", "Too slow!", "Not today!", "Calculated.", "Try again! 😜", "Nope!"];
+        noBtn.innerText = texts[Math.floor(Math.random() * texts.length)];
+    }
 
     noBtn.addEventListener("mouseover", moveNo);
     noBtn.addEventListener("touchstart", (e) => {
@@ -230,6 +256,11 @@
 
     yesBtn.onclick = () => {
         document.getElementById("overlay").style.display = "flex";
+        // Final heart burst
+        hearts.forEach(h => {
+            h.baseSpeedX *= 10;
+            h.baseSpeedY *= 10;
+        });
     };
 </script>
 
